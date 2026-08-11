@@ -816,10 +816,8 @@ function renderReqList() {
             <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
             <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
             ${t.desc?`<div class="modal-field modal-ff"><div class="modal-fl">요청 내용 · 드라이브</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.6">${t.desc}</div></div>`:''}
-          </div>
-          <div style="padding:8px 10px;background:#fffbee;border:1px solid #FAC775;border-radius:6px;font-size:11px;color:#633806;">
-            ⚠️ 확정된 작업을 수정하면 ABBG에서 재검토가 필요할 수 있어요.
           </div>`;
+        document.getElementById('modal-warn').style.display='block';
         const editBtn2 = document.getElementById('modal-edit');
         editBtn2.style.display='inline-flex';
         editBtn2.textContent='수정';
@@ -1230,6 +1228,7 @@ function renderG() {
           // 삭제 버튼 숨기기 (대기중은 취소 버튼 사용)
         const delBtnP = document.getElementById('modal-del');
         if(delBtnP) delBtnP.style.display='none';
+        const warnEl = document.getElementById('modal-warn'); if(warnEl) warnEl.style.display='none';
         const editBtn = document.getElementById('modal-edit');
           editBtn.style.display = 'inline-flex';
           editBtn.textContent = '수정';
@@ -1259,10 +1258,8 @@ function renderG() {
               <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
               <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
               ${t.desc?`<div class="modal-field modal-ff"><div class="modal-fl">요청 내용 · 드라이브</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.6">${t.desc}</div></div>`:''}
-            </div>
-            <div style="padding:8px 10px;background:#fffbee;border:1px solid #FAC775;border-radius:6px;font-size:11px;color:#633806;">
-              ⚠️ 확정된 작업을 수정하면 ABBG에서 재검토가 필요할 수 있어요.
             </div>`;
+        document.getElementById('modal-warn').style.display='block';
           const editBtn2 = document.getElementById('modal-edit');
           editBtn2.style.display = 'inline-flex';
           editBtn2.textContent = '수정';
