@@ -593,6 +593,7 @@ const TI = {
   etc:{name:'기타',days:'확인 후 안내',minDays:2,ex:['번역 편집','영문 버전','일본어 현지화'],note:'내용 상세히 적어주시면 일정 확인 후 회신드려요.'}
 };
 const DM = {detail:3,banner:2,package:2,sns:1,print:2,edit:1,etc:2};
+const DN = ['월','화','수','목','금'];
 const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',settings:'설정',lock:'ABBG 전용'};
 const TABS = ['form','requests','schedule','people','tutorial','review','settings','lock'];
 
@@ -705,6 +706,7 @@ document.getElementById('btn-add-person').onclick = addP;
 document.getElementById('new-person').onkeydown = e => {if(e.key==='Enter') addP();};
 document.getElementById('btn-add-off').onclick = addO;
 document.getElementById('pw-submit').onclick = chPw;
+function closeModal(){document.getElementById('modal-bg').classList.remove('show');}
 document.getElementById('modal-close').onclick = closeModal;
 document.getElementById('modal-close2').onclick = closeModal;
 document.getElementById('modal-bg').onclick = e => { if(e.target===document.getElementById('modal-bg')) closeModal(); };
@@ -1028,7 +1030,6 @@ async function rmO(i) {
   await sb.from('off_days').delete().eq('date',d);
   offDays.splice(i,1); renderO(); renderG(); showT('삭제됐어요.');
 }
-const DN=['월','화','수','목','금'];
 function getWD(off) {
   const today=new Date(); const day=today.getDay();
   const mon=new Date(today); mon.setDate(today.getDate()-(day===0?6:day-1)+off*7);
