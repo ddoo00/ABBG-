@@ -527,7 +527,9 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
     <div class="page" id="page-review">
       <div class="pg-hd"><div class="pg-title">검토 · 확정</div><div class="pg-sub">대기 중인 요청을 승인하고 전체 작업 목록을 관리해요</div></div>
       <div class="abbg-banner"><i class="ti ti-shield-check"></i>ABBG 전용 — 인증된 팀원만 접근할 수 있어요</div>
-      <div class="sec-lbl">확인 필요 — 검토 대기 중</div>
+      <div class="sec-lbl">이번 주 · 다음 주 스케줄</div>
+      <div id="rev-schedule"></div>
+      <div class="sec-lbl" style="margin-top:14px">확인 필요 — 검토 대기 중</div>
       <div id="rev-pending"></div>
 
     </div>
@@ -619,7 +621,7 @@ async function loadAll() {
     sb.from('pending').select('*').order('created_at'),
     sb.from('off_days').select('*').order('date')
   ]);
-  tasks = (t.data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done}));
+  tasks = (t.data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done,desc:r.description||''}));
   people = (p.data||[]).map(r=>r.name);
   pending = (pe.data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,type:r.type,due:r.due,priority:r.priority,desc:r.description,regAt:r.reg_at}));
   offDays = (o.data||[]).map(r=>r.date);
@@ -637,22 +639,22 @@ async function seedPeople() {
 
 async function seedTasks() {
   const seed = [
-    {name:'올리브영 스티커',sub:'한유정',start_date:'2026-08-11',due:'2026-08-12',priority:'urgent',slot:'1',done:false},
-    {name:'카카오쇼핑 이벤트 배너',sub:'세별',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'1',done:false},
-    {name:'골드파로 일본어 수정',sub:'Nahwa',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'1',done:false},
-    {name:'베리말차효소 목업',sub:'정자윤',start_date:'2026-08-13',due:'2026-08-14',priority:'normal',slot:'1',done:false},
-    {name:'카사베르디 싸바리',sub:'정세진',start_date:'2026-08-18',due:'2026-08-19',priority:'normal',slot:'1',done:false},
-    {name:'레와비 증정용 안내지',sub:'송경진',start_date:'2026-08-11',due:'2026-08-11',priority:'normal',slot:'2',done:true},
-    {name:'아마존 판넬 PC 4종',sub:'김도연',start_date:'2026-08-11',due:'2026-08-12',priority:'urgent',slot:'2',done:false},
-    {name:'수출효소 단상자 수정',sub:'김도연',start_date:'2026-08-12',due:'2026-08-13',priority:'urgent',slot:'2',done:false},
-    {name:'네이버 헬시페스타 배너',sub:'은균',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'2',done:false},
-    {name:'바엘 상세페이지 영문',sub:'김은채',start_date:'2026-08-12',due:'2026-08-14',priority:'normal',slot:'2',done:false},
-    {name:'일본 리센느 광고소재',sub:'이수연',start_date:'2026-08-11',due:'2026-08-13',priority:'normal',slot:'2',done:false},
-    {name:'골드파로 수출용 수정',sub:'하영',start_date:'2026-08-18',due:'2026-08-18',priority:'normal',slot:'2',done:false},
-    {name:'아마존 판넬 모바일',sub:'김도연',start_date:'2026-08-13',due:'2026-08-14',priority:'normal',slot:'2',done:false},
-    {name:'바엘 정보고시 배너',sub:'정자윤',start_date:'2026-08-18',due:'2026-08-20',priority:'normal',slot:'2',done:false},
+    {name:'올리브영 스티커',sub:'한유정',start_date:'2026-08-11',due:'2026-08-12',priority:'urgent',slot:'1',done:false,description:'W:\\공용 드라이브\\[ABBG 업무요청]\\20260811_한유정_ 레와비데드롱스티커 사이즈수정\n오후 5시 이전 전달'},
+    {name:'카카오쇼핑 이벤트 배너',sub:'세별',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'1',done:false,description:'W:\\공용 드라이브\\커머스사업부\\브랜드디자인팀\\업무전달\\260811_카카오쇼핑하기 이벤트페이지\n오전까지 전달'},
+    {name:'골드파로 일본어 수정',sub:'Nahwa',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'1',done:false,description:'골드파로 일본어 수정본'},
+    {name:'베리말차효소 목업',sub:'정자윤',start_date:'2026-08-13',due:'2026-08-14',priority:'normal',slot:'1',done:false,description:'베리말차효소 목업 패키지 2장, 스틱 1장'},
+    {name:'카사베르디 싸바리',sub:'정세진',start_date:'2026-08-18',due:'2026-08-19',priority:'normal',slot:'1',done:false,description:'https://works.do/xk6n1MU\n카사베르디 비니거 싸바리, 카드 간지 및 쇼핑백 목업'},
+    {name:'레와비 증정용 안내지',sub:'송경진',start_date:'2026-08-11',due:'2026-08-11',priority:'normal',slot:'2',done:true,description:'W:\\공용 드라이브\\[ABBG 업무요청]\\20260811_전웅기_레와비안내문(수정)\n레와비 증정용 안내지 재제작'},
+    {name:'아마존 판넬 PC 4종',sub:'김도연',start_date:'2026-08-11',due:'2026-08-12',priority:'urgent',slot:'2',done:false,description:'아마존 판넬 4종 PC버전. 이후 모바일 사이즈 베리에이션 예정'},
+    {name:'수출효소 단상자 수정',sub:'김도연',start_date:'2026-08-12',due:'2026-08-13',priority:'urgent',slot:'2',done:false,description:'수출효소 단상자 영문 수정 전달'},
+    {name:'네이버 헬시페스타 배너',sub:'은균',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'2',done:false,description:'W:\\공용 드라이브\\커머스사업부\\브랜드디자인팀\\업무전달\\260811_네이버 8월 헬시페스타 배너 제작\n오후 5시까지 전달'},
+    {name:'바엘 상세페이지 영문',sub:'김은채',start_date:'2026-08-12',due:'2026-08-14',priority:'normal',slot:'2',done:false,description:'W:\\공용 드라이브\\01. 공용\\바엘\\제품 상세페이지 및 누끼, 로고\\★상세페이지\\광채 크림 앰플\\광채 크림 앰플 50ml 상세페이지\n바엘 상세페이지 번역본'},
+    {name:'일본 리센느 광고소재',sub:'이수연',start_date:'2026-08-11',due:'2026-08-13',priority:'normal',slot:'2',done:false,description:'리센느 일본 바리에이션'},
+    {name:'골드파로 수출용 수정',sub:'하영',start_date:'2026-08-18',due:'2026-08-18',priority:'normal',slot:'2',done:false,description:'골드파로 수출용 수정'},
+    {name:'아마존 판넬 모바일',sub:'김도연',start_date:'2026-08-13',due:'2026-08-14',priority:'normal',slot:'2',done:false,description:'아마존 판넬 모바일 사이즈 베리에이션'},
+    {name:'바엘 정보고시 배너',sub:'정자윤',start_date:'2026-08-18',due:'2026-08-20',priority:'normal',slot:'2',done:false,description:'W:\\공용 드라이브\\커머스사업부\\브랜드디자인팀\\업무전달\\20260811_바엘 정보고시배너\n14시 이전 전달'},
   ];
-  const {data} = await sb.from('tasks').insert(seed).select();
+  const {data} = await sb.from('tasks').insert(seed.map(s=>({...s,description:s.description||''}))).select();
   tasks = (data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done}));
 }
 
@@ -664,7 +666,7 @@ function sw(tab) {
     const m=document.getElementById('mtab-'+t); if(m) m.classList.toggle('active',t===tab);
   });
   const mpg=document.getElementById('mpg'); if(mpg) mpg.textContent=PAGES[tab]||'';
-  if(tab==='review') renderRev();
+  if(tab==='review') { renderRev(); renderRevSchedule(); }
   if(tab==='requests') renderReqList();
   if(tab==='schedule') renderG();
   if(tab==='people') {renderP(); renderO();}
@@ -815,6 +817,7 @@ function renderReqList() {
             <div class="modal-field"><div class="modal-fl">납기일</div><div class="modal-fv">${t.due.replace(/-/g,'.')}</div></div>
             <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
             <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
+            ${t.desc?`<div class="modal-field modal-ff"><div class="modal-fl">요청 내용 · 드라이브</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.6">${t.desc}</div></div>`:''}
           </div>
           <div style="padding:8px 10px;background:#fffbee;border:1px solid #FAC775;border-radius:6px;font-size:11px;color:#633806;">
             ⚠️ 확정된 작업을 수정하면 ABBG에서 재검토가 필요할 수 있어요.
@@ -956,6 +959,95 @@ function updB() {
     if(mb) mb.classList.remove('show');
   }
 }
+function renderRevSchedule() {
+  const el = document.getElementById('rev-schedule');
+  if(!el) return;
+
+  // 이번주 + 다음주 날짜 계산
+  const today = new Date();
+  const day = today.getDay();
+  const mon = new Date(today);
+  mon.setDate(today.getDate() - (day===0?6:day-1));
+
+  // 10일치 (월~금 x 2주)
+  const days = [];
+  for(let w=0; w<2; w++) {
+    for(let d=0; d<5; d++) {
+      const dt = new Date(mon);
+      dt.setDate(mon.getDate() + w*7 + d);
+      days.push(dt);
+    }
+  }
+  const ds = days.map(fmt);
+  const todayStr = fmt(today);
+  const DN2 = ['월','화','수','목','금'];
+
+  // 헤더
+  let html = '<div style="overflow-x:auto;margin-bottom:4px;"><table class="gt" style="min-width:600px;">';
+  html += '<thead><tr><th style="min-width:110px;font-size:10px;">작업명</th><th style="width:50px;font-size:10px;">구좌</th>';
+  days.forEach((d,i) => {
+    const ds2 = fmt(d);
+    const off = isO(ds2);
+    const isT = ds2 === todayStr;
+    const isNextW = i >= 5;
+    html += `<th class="dc${off?' hol':isT?' today-col':''}" style="width:52px;">
+      <span class="dn" style="font-size:9px;${isNextW?'color:var(--text-muted)':''}">${d.getDate()}</span>
+      <span class="dname" style="font-size:8px;">${DN2[i%5]}</span>
+      ${off?`<span class="hol-nm" style="font-size:8px;">${gOL(ds2)}</span>`:''}
+    </th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  // 이번주+다음주에 걸치는 작업만
+  const weekStart = ds[0], weekEnd = ds[ds.length-1];
+  const visible = tasks.filter(t => t.start <= weekEnd && t.due >= weekStart);
+
+  if(!visible.length) {
+    html += `<tr><td colspan="${days.length+2}" style="text-align:center;padding:1rem;color:var(--text-muted);font-size:11px;">이 기간에 작업이 없어요</td></tr>`;
+  } else {
+    visible.forEach(t => {
+      const si = ds.indexOf(t.start), di = ds.indexOf(t.due);
+      const is1 = t.slot==='1';
+      const barDue = t.done?'bar-done':is1?'bar-s1':'bar-s2';
+      const barDim = is1?'bar-s1d':'bar-s2d';
+      const btCls = t.done?'bt-done':is1?'bt-s1':'bt-s2';
+      let cells = '';
+      ds.forEach((_,i) => {
+        const off = isO(ds[i]); const hc = off?' hol':'';
+        const inR = si>=0&&di>=0&&i>=si&&i<di;
+        if(i===di&&di>=0) cells += `<td class="dc${hc}"><div class="bw"><div class="bar ${barDue}" style="height:14px;"><span class="bt ${btCls}" style="font-size:8px;">${t.done?'완료':'마감'}</span></div></div></td>`;
+        else if(inR) cells += `<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}" style="height:14px;"></div></div></td>`;
+        else cells += `<td class="dc${hc}"><div class="bw"></div></td>`;
+      });
+      html += `<tr>
+        <td class="tnc" style="padding:0 6px;">
+          <div class="tn" style="font-size:10px;">${t.name}</div>
+          <div class="ts-s" style="font-size:9px;">${t.sub}</div>
+        </td>
+        <td style="width:50px;padding:0 4px;">${sBadge(t.slot)}</td>
+        ${cells}
+      </tr>`;
+    });
+  }
+  html += '</tbody></table></div>';
+
+  // 주차 구분 레이블
+  const w1s = `${days[0].getMonth()+1}/${days[0].getDate()}`;
+  const w1e = `${days[4].getMonth()+1}/${days[4].getDate()}`;
+  const w2s = `${days[5].getMonth()+1}/${days[5].getDate()}`;
+  const w2e = `${days[9].getMonth()+1}/${days[9].getDate()}`;
+
+  el.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:6px;font-size:10px;font-weight:600;color:var(--text-muted);">
+      <span>이번 주 ${w1s}~${w1e}</span>
+      <span style="color:var(--border-stronger)">|</span>
+      <span>다음 주 ${w2s}~${w2e}</span>
+    </div>
+    ${html}
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">확정된 작업 ${visible.length}건 · 새 요청 승인 전 충돌 여부를 확인해주세요</div>
+  `;
+}
+
 function renderRev() {
   const pEl=document.getElementById('rev-pending');
   if(!pending.length){pEl.innerHTML=`<div style="font-size:11px;color:var(--text-muted);padding:6px 0">대기 중인 요청이 없어요</div>`;}
@@ -1017,7 +1109,7 @@ async function appR(id) {
   if(error){alert('승인 실패: '+error.message); return;}
   await sb.from('pending').delete().eq('id',id);
   tasks.push({id:data[0].id,name:p.name,sub:p.sub,start:cstart||cdue,due:cdue,priority:p.priority,slot,done:false});
-  pending.splice(pending.indexOf(p),1); updB(); renderRev(); renderG(); showT(p.name+' 승인됐어요!');
+  pending.splice(pending.indexOf(p),1); updB(); renderRev(); renderRevSchedule(); renderG(); showT(p.name+' 승인됐어요!');
 }
 async function rejR(id) {
   if(!confirm('반려하면 삭제돼요.')) return;
@@ -1165,6 +1257,7 @@ function renderG() {
               <div class="modal-field"><div class="modal-fl">납기일</div><div class="modal-fv">${t.due.replace(/-/g,'.')}</div></div>
               <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
               <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
+              ${t.desc?`<div class="modal-field modal-ff"><div class="modal-fl">요청 내용 · 드라이브</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.6">${t.desc}</div></div>`:''}
             </div>
             <div style="padding:8px 10px;background:#fffbee;border:1px solid #FAC775;border-radius:6px;font-size:11px;color:#633806;">
               ⚠️ 확정된 작업을 수정하면 ABBG에서 재검토가 필요할 수 있어요.
