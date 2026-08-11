@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ABBG 디자인 요청 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -16,7 +19,7 @@
   --border:#e5e5e2;--border-strong:#d0d0cc;--border-stronger:#b8b8b4;
   --text-primary:#1a1a18;--text-secondary:#555550;--text-muted:#888780;
   --sw:188px;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 body{background:var(--surface-1);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px;}
 .app{display:flex;width:100%;max-width:960px;min-height:calc(100vh - 40px);background:var(--surface-0);border-radius:12px;overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,.07);}
@@ -24,7 +27,7 @@ body{background:var(--surface-1);min-height:100vh;display:flex;align-items:flex-
 .sb-logo{padding:12px 13px 10px;border-bottom:1px solid var(--border);}
 .sb-sec{padding:8px 6px 4px;}
 .sb-lbl{font-size:10px;font-weight:600;color:var(--sbm);letter-spacing:.06em;text-transform:uppercase;padding:0 6px;margin-bottom:2px;}
-.ni{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:6px;font-size:12px;font-weight:500;color:var(--sbt);cursor:pointer;transition:all .1s;margin-bottom:1px;user-select:none;}
+.ni{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:6px;font-size:13px;font-weight:500;color:var(--sbt);cursor:pointer;transition:all .1s;margin-bottom:1px;user-select:none;}
 .ni:hover,.ni.active{background:var(--sa);color:var(--sat);font-weight:600;}
 .ni i{font-size:14px;flex-shrink:0;color:var(--sbm);}
 .ni.active i,.ni:hover i{color:var(--sat);}
@@ -38,22 +41,22 @@ body{background:var(--surface-1);min-height:100vh;display:flex;align-items:flex-
 .page{display:none;}
 .page.active{display:block;}
 .pg-hd{margin-bottom:13px;}
-.pg-title{font-size:15px;font-weight:700;color:var(--text-primary);}
-.pg-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.pg-title{font-size:17px;font-weight:700;color:var(--text-primary);}
+.pg-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
 .fc{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:13px;margin-bottom:10px;}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .ff{grid-column:1/-1;}
 .fld{display:flex;flex-direction:column;gap:4px;}
-.lbl{font-size:10px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;}
+.lbl{font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.04em;text-transform:uppercase;}
 .req{color:var(--c2);}
-select,input[type=text],input[type=date],input[type=password],textarea{width:100%;padding:6px 9px;font-size:12px;border:1px solid var(--border-strong);border-radius:6px;background:var(--surface-1);color:var(--text-primary);font-family:inherit;}
+select,input[type=text],input[type=date],input[type=password],textarea{width:100%;padding:7px 10px;font-size:13px;border:1px solid var(--border-strong);border-radius:6px;background:var(--surface-1);color:var(--text-primary);font-family:inherit;}
 select:focus,input:focus,textarea:focus{outline:none;border-color:var(--c1);}
 textarea{resize:vertical;min-height:58px;line-height:1.5;}
 input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);}
 .person-hint{font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5;}
 .person-hint span{color:var(--c1d);font-weight:600;cursor:pointer;text-decoration:underline;}
 .pri-row{display:flex;gap:4px;}
-.pbtn{flex:1;padding:6px 4px;font-size:11px;font-weight:600;border:1px solid var(--border-strong);border-radius:6px;background:var(--surface-1);color:var(--text-muted);cursor:pointer;text-align:center;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:4px;user-select:none;}
+.pbtn{flex:1;padding:7px 4px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);border-radius:6px;background:var(--surface-1);color:var(--text-muted);cursor:pointer;text-align:center;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:4px;user-select:none;}
 .pbtn.sel-urgent{background:#fff0ee;border-color:#F5C4B3;color:#712B13;}
 .pbtn.sel-normal{background:#eef6ff;border-color:#B5D4F4;color:#0C447C;}
 .pbtn.sel-low{background:#edfbf4;border-color:#9FE1CB;color:#085041;}
@@ -66,7 +69,7 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .ph-hol,.ph-full{background:#fff0ee;border-bottom:1px solid #F5C4B3;}
 .ph-free{background:#edfbf4;border-bottom:1px solid #9FE1CB;}
 .ph-busy{background:#fffbee;border-bottom:1px solid #FAC775;}
-.due-ph-lbl{font-size:11px;font-weight:600;}
+.due-ph-lbl{font-size:12px;font-weight:600;}
 .ph-hol .due-ph-lbl,.ph-full .due-ph-lbl{color:#712B13;}
 .ph-free .due-ph-lbl{color:#085041;}
 .ph-busy .due-ph-lbl{color:#633806;}
@@ -76,21 +79,21 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .due-row:last-child{border-bottom:none;}
 .ddot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
 .ddot-u{background:#D85A30;}.ddot-n{background:#378ADD;}.ddot-t{background:#BA7517;}
-.di-nm{font-size:11px;color:var(--text-primary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.di-nm{font-size:12px;color:var(--text-primary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
 .di-sub{font-size:10px;color:var(--text-muted);}
 .ib{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600;white-space:nowrap;}
 .ib-u{background:#fff0ee;color:#712B13;}.ib-n{background:#eef6ff;color:#0C447C;}
 .ib-w{background:var(--surface-1);color:var(--text-secondary);border:1px solid var(--border);}
 .ib-t{background:#fffbee;color:#633806;}
-.due-note{font-size:10px;color:var(--text-muted);padding:5px 10px;background:var(--surface-1);line-height:1.5;}
+.due-note{font-size:11px;color:var(--text-muted);padding:5px 10px;background:var(--surface-1);line-height:1.5;}
 .th{display:none;margin-top:5px;padding:8px 10px;background:var(--surface-1);border:1px solid var(--c1m);border-radius:6px;border-left:3px solid var(--c1);}
 .th.show{display:flex;flex-direction:column;gap:4px;}
 .th-top{display:flex;align-items:center;justify-content:space-between;}
-.th-nm{font-size:11px;font-weight:600;color:var(--text-primary);}
+.th-nm{font-size:12px;font-weight:600;color:var(--text-primary);}
 .th-days{font-size:10px;padding:1px 6px;border-radius:9px;background:#edfbf4;color:#085041;font-weight:600;}
 .th-exs{display:flex;flex-wrap:wrap;gap:3px;}
-.th-ex{font-size:10px;padding:1px 6px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;color:var(--text-secondary);}
-.th-note{font-size:10px;color:var(--text-muted);line-height:1.5;}
+.th-ex{font-size:11px;padding:1px 6px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;color:var(--text-secondary);}
+.th-note{font-size:11px;color:var(--text-muted);line-height:1.5;}
 .cp{display:none;border-radius:8px;overflow:hidden;border:1px solid #F5C4B3;margin-bottom:10px;}
 .cp.show{display:block;}
 .cp-hd{padding:7px 11px;background:#fff0ee;display:flex;align-items:center;gap:6px;}
@@ -98,20 +101,20 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .cp-cnt{font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;background:#F5C4B3;color:#712B13;}
 .cp-item{display:flex;align-items:flex-start;gap:7px;padding:6px 11px;border-bottom:1px solid var(--border);background:var(--surface-2);}
 .cp-item:last-child{border-bottom:none;}
-.cp-main{font-size:11px;font-weight:600;color:var(--text-primary);line-height:1.4;margin-bottom:1px;}
-.cp-sub{font-size:10px;color:var(--text-muted);line-height:1.5;}
-.submit-btn{width:100%;padding:9px;background:#1a1a18;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.cp-main{font-size:12px;font-weight:600;color:var(--text-primary);line-height:1.4;margin-bottom:1px;}
+.cp-sub{font-size:11px;color:var(--text-muted);line-height:1.5;}
+.submit-btn{width:100%;padding:10px;background:#1a1a18;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
 .submit-btn:hover{opacity:.82;}
 .submit-btn:disabled{opacity:.5;cursor:not-allowed;}
 .chip-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:22px;}
-.chip{display:inline-flex;align-items:center;padding:3px 3px 3px 9px;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:500;color:var(--text-primary);}
+.chip{display:inline-flex;align-items:center;padding:4px 4px 4px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;color:var(--text-primary);}
 .chip-x{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;min-width:16px;border-radius:50%;border:1.2px solid #999;background:none;cursor:pointer;padding:0;margin-left:5px;font-size:11px;font-weight:700;color:#333;line-height:1;}
 .chip-x:hover{background:#333;color:#fff;border-color:#333;}
 .chip-off{background:#fff0ee;border-color:#F5C4B3;color:#712B13;}
 .chip-off .chip-x{border-color:#D85A30;color:#D85A30;}
 .chip-off .chip-x:hover{background:#D85A30;color:#fff;}
-.sb1{display:inline-flex;align-items:center;gap:2px;font-size:10px;padding:1px 6px;border-radius:9px;background:var(--c1b);color:var(--c1d);border:1px solid var(--c1m);font-weight:600;}
-.sb2{display:inline-flex;align-items:center;gap:2px;font-size:10px;padding:1px 6px;border-radius:9px;background:var(--c2b);color:var(--c2d);border:1px solid var(--c2m);font-weight:600;}
+.sb1{display:inline-flex;align-items:center;gap:2px;font-size:11px;padding:1px 7px;border-radius:9px;background:var(--c1b);color:var(--c1d);border:1px solid var(--c1m);font-weight:700;}
+.sb2{display:inline-flex;align-items:center;gap:2px;font-size:11px;padding:1px 7px;border-radius:9px;background:var(--c2b);color:var(--c2d);border:1px solid var(--c2m);font-weight:700;}
 .sb-etc{display:inline-flex;font-size:10px;padding:1px 6px;border-radius:9px;background:var(--surface-1);color:var(--text-muted);border:1px solid var(--border);font-weight:500;}
 .d1{width:4px;height:4px;border-radius:50%;background:var(--c1);display:inline-block;}
 .d2{width:4px;height:4px;border-radius:50%;background:var(--c2);display:inline-block;}
@@ -119,12 +122,12 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .b-urg{background:#fff0ee;color:#712B13;border:1px solid #F5C4B3;}
 .b-nrm{background:#eef6ff;color:#0C447C;border:1px solid #B5D4F4;}
 .b-don{background:#edfbf4;color:#085041;border:1px solid #9FE1CB;}
-.abbg-banner{display:flex;align-items:center;gap:7px;padding:7px 11px;background:var(--c1b);border:1px solid var(--c1m);border-radius:7px;margin-bottom:12px;font-size:11px;color:var(--c1d);font-weight:500;}
+.abbg-banner{display:flex;align-items:center;gap:7px;padding:8px 12px;background:var(--c1b);border:1px solid var(--c1m);border-radius:7px;margin-bottom:12px;font-size:12px;color:var(--c1d);font-weight:500;}
 .abbg-banner i{font-size:13px;color:var(--c1);flex-shrink:0;}
 .lock-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;text-align:center;}
 .lock-screen i{font-size:28px;color:var(--text-muted);margin-bottom:8px;}
-.lock-t{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
-.lock-s{font-size:11px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;}
+.lock-t{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+.lock-s{font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;}
 .lock-row{display:flex;gap:5px;width:100%;max-width:220px;}
 .lock-row input{flex:1;}
 .lock-btn{padding:6px 11px;background:var(--sat);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
@@ -134,12 +137,12 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .sec-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
 .pend-card{background:#fffbee;border:1px solid #FAC775;border-radius:8px;overflow:hidden;margin-bottom:6px;}
 .pend-hd{padding:8px 12px;border-bottom:1px solid #FAC775;display:flex;align-items:flex-start;justify-content:space-between;gap:7px;}
-.pend-nm{font-size:12px;font-weight:700;color:var(--text-primary);}
+.pend-nm{font-size:13px;font-weight:700;color:var(--text-primary);}
 .pend-mt{font-size:10px;color:var(--text-muted);margin-top:1px;}
 .pend-bd{padding:8px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .pend-f{display:flex;flex-direction:column;gap:2px;}
 .pend-fl{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;}
-.pend-fv{font-size:11px;color:var(--text-primary);font-weight:500;}
+.pend-fv{font-size:12px;color:var(--text-primary);font-weight:500;}
 .pend-ff{grid-column:1/-1;}
 .rc-asgn{padding:8px 12px;border-top:1px solid var(--border);background:var(--surface-1);display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;align-items:end;}
 .rc-al{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;}
@@ -150,7 +153,7 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .btn-rj:hover{border-color:var(--c2);color:var(--c2d);}
 .conf-card{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:5px;}
 .conf-hd{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:7px;}
-.conf-nm{font-size:11px;font-weight:600;color:var(--text-primary);}
+.conf-nm{font-size:12px;font-weight:600;color:var(--text-primary);}
 .conf-mt{font-size:10px;color:var(--text-muted);}
 .conf-bd{padding:5px 12px;border-top:1px solid var(--border);display:flex;gap:5px;}
 .btn-done{padding:3px 8px;background:var(--c1b);border:1px solid var(--c1m);border-radius:5px;font-size:10px;font-weight:600;color:var(--c1d);cursor:pointer;}
@@ -179,9 +182,9 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .gt tr:hover td{background:var(--surface-1);}
 .gt th.hol{background:#fff8f6;}.gt td.hol{background:#fffaf9;}
 .tnc{min-width:100px;max-width:130px;padding:0 6px;}
-.tn{font-size:11px;font-weight:600;color:var(--text-primary);}
-.tn-p{font-size:11px;font-weight:500;color:var(--text-muted);}
-.ts-s{font-size:9px;color:var(--text-muted);margin-top:1px;}
+.tn{font-size:12px;font-weight:600;color:var(--text-primary);}
+.tn-p{font-size:12px;font-weight:500;color:var(--text-muted);}
+.ts-s{font-size:10px;color:var(--text-muted);margin-top:1px;}
 .gt tr.row-p td{opacity:.5;}
 .dc{width:60px;text-align:center;padding:0 2px;}
 .bw{display:flex;align-items:center;justify-content:center;height:30px;}
@@ -194,19 +197,19 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .bar-pend{background:var(--surface-1);border:1px dashed var(--border-stronger);}
 .bt{font-size:9px;font-weight:700;padding:0 4px;width:100%;text-align:center;white-space:nowrap;overflow:hidden;}
 .bt-s1{color:var(--c1d);}.bt-s2{color:var(--c2d);}.bt-done{color:#27500A;}.bt-p{color:var(--text-muted);}
-.dn{display:block;font-weight:700;color:var(--text-primary);font-size:10px;}
+.dn{display:block;font-weight:700;color:var(--text-primary);font-size:11px;}
 .dname{display:block;color:var(--text-muted);font-size:9px;}
 .today-col{background:#f0f7ff;}.today-col .dn{color:#185FA5;}
 .hol .dn{color:#993C1D;}.hol .dname{color:#D85A30;}
 .hol-nm{font-size:9px;color:#D85A30;display:block;font-weight:600;}
 .mg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .mg-box{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:12px;}
-.mg-ttl{font-size:10px;font-weight:700;color:var(--text-primary);margin-bottom:8px;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
+.mg-ttl{font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:8px;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
 .mg-ttl i{font-size:13px;color:var(--text-muted);}
 .off-hint{font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5;padding:6px 8px;background:var(--surface-1);border-radius:5px;border:1px solid var(--border);}
 .add-row{display:flex;gap:4px;}
-.add-row input{flex:1;font-size:11px;padding:5px 8px;}
-.add-btn{padding:5px 9px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
+.add-row input{flex:1;font-size:12px;padding:6px 9px;}
+.add-btn{padding:6px 10px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
 .add-btn:hover{border-color:var(--c1);color:var(--c1d);}
 .pw-box{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:13px;max-width:300px;}
 .pw-ttl{font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:10px;}
@@ -217,12 +220,12 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .pw-msg.ok{display:block;color:var(--c1d);}
 .pw-msg.err{display:block;color:var(--c2d);}
 .notice-card{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:13px;margin-bottom:12px;}
-.notice-title{font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:9px;display:flex;align-items:center;gap:5px;}
+.notice-title{font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:9px;display:flex;align-items:center;gap:5px;}
 .notice-title i{font-size:13px;color:var(--sbm);}
 .notice-list{display:flex;flex-direction:column;gap:7px;}
 .notice-item{display:flex;align-items:flex-start;gap:9px;}
 .notice-num{width:18px;height:18px;border-radius:50%;background:#1a1a18;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.notice-text{font-size:11px;color:var(--text-primary);line-height:1.65;}
+.notice-text{font-size:12px;color:var(--text-primary);line-height:1.65;}
 .notice-text b{font-weight:700;}
 .tut-flow{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:12px;}
 .tfl{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
@@ -241,14 +244,14 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .tut-step{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:11px;position:relative;}
 .ts-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
 .ts-num{width:15px;height:15px;border-radius:50%;background:#1a1a18;color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ts-t{font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:2px;}
-.ts-d{font-size:10px;color:var(--text-muted);line-height:1.6;}
+.ts-t{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:2px;}
+.ts-d{font-size:11px;color:var(--text-muted);line-height:1.6;}
 .ts-tag{display:inline-flex;font-size:9px;padding:2px 6px;border-radius:9px;font-weight:600;background:var(--c1b);color:var(--c1d);border:1px solid var(--c1m);}
 .tut-tips{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
 .tut-tip{background:var(--surface-1);border-radius:7px;padding:9px;border:1px solid var(--border);}
 .tut-tip i{font-size:14px;color:var(--text-muted);margin-bottom:4px;display:block;}
-.tt-t{font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:2px;}
-.tt-d{font-size:10px;color:var(--text-muted);line-height:1.5;}
+.tt-t{font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:2px;}
+.tt-d{font-size:11px;color:var(--text-muted);line-height:1.5;}
 .loading{text-align:center;padding:1.5rem;font-size:11px;color:var(--text-muted);}
 @media(max-width:640px){
   body{padding:0;}
@@ -267,6 +270,49 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a1a18;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;color:#fff;opacity:0;transition:all .2s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+
+.req-card{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:7px;}
+.req-card.pend{border-color:#FAC775;background:#fffbee;}
+.req-card.conf{background:var(--surface-2);}
+.req-card-hd{padding:9px 13px;display:flex;align-items:flex-start;justify-content:space-between;gap:7px;border-bottom:1px solid var(--border);}
+.req-card.pend .req-card-hd{border-color:#FAC775;}
+.req-card-nm{font-size:13px;font-weight:700;color:var(--text-primary);}
+.req-card-mt{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.req-card-bd{padding:9px 13px;display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.req-field{display:flex;flex-direction:column;gap:2px;}
+.req-fl{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;}
+.req-fv{font-size:12px;color:var(--text-primary);font-weight:500;}
+.req-ff{grid-column:1/-1;}
+.req-card-ft{padding:7px 13px;border-top:1px solid var(--border);display:flex;gap:6px;}
+.req-status{font-size:10px;padding:2px 7px;border-radius:9px;font-weight:600;}
+.pend-status{background:#fffbee;color:#633806;border:1px solid #FAC775;}
+.conf-status{background:var(--c1b);color:var(--c1d);border:1px solid var(--c1m);}
+.done-status{background:#edfbf4;color:#085041;border:1px solid #9FE1CB;}
+.btn-req-edit{padding:4px 10px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;}
+.btn-req-edit:hover{border-color:var(--c1);color:var(--c1d);}
+.btn-req-cancel{padding:4px 10px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;}
+.btn-req-cancel:hover{border-color:var(--c2);color:var(--c2d);}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--surface-0);border-radius:12px;width:100%;max-width:440px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);}
+.modal-hd{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:14px;font-weight:700;color:var(--text-primary);}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);line-height:1;padding:2px 6px;}
+.modal-close:hover{color:var(--sat);}
+.modal-bd{padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.modal-field{display:flex;flex-direction:column;gap:3px;}
+.modal-fl{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;}
+.modal-fv{font-size:12px;color:var(--text-primary);font-weight:500;line-height:1.5;}
+.modal-ff{grid-column:1/-1;}
+.modal-ft{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end;}
+.btn-modal-edit{padding:6px 14px;background:#1a1a18;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-modal-edit:hover{opacity:.82;}
+.btn-modal-close{padding:6px 12px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;}
+.btn-modal-close:hover{border-color:var(--border-stronger);}
+.gt tr.clickable{cursor:pointer;}
+.gt tr.clickable:hover td{background:#f0f7ff;}
 /* 모바일 */
 @media(max-width:640px){
   body{padding:0;}
@@ -311,6 +357,7 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
   <div class="sb-sec">
     <div class="sb-lbl">메뉴</div>
     <div class="ni active" id="nav-form"><i class="ti ti-edit"></i>요청서 작성</div>
+    <div class="ni" id="nav-requests"><i class="ti ti-list-check"></i>요청 현황</div>
     <div class="ni" id="nav-schedule"><i class="ti ti-calendar"></i>스케줄</div>
     <div class="ni" id="nav-people"><i class="ti ti-users"></i>담당자 · 휴무일</div>
     <div class="ni" id="nav-tutorial"><i class="ti ti-help-circle"></i>사용 가이드</div>
@@ -379,6 +426,12 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
       <button class="submit-btn" id="submit-btn"><i class="ti ti-send"></i>요청 등록하기</button>
     </div>
 
+
+    <div class="page" id="page-requests">
+      <div class="pg-hd"><div class="pg-title">요청 현황</div><div class="pg-sub">등록된 요청을 확인하고 대기 중인 요청을 수정하거나 취소할 수 있어요</div></div>
+      <div id="req-list-content"></div>
+    </div>
+
     <div class="page" id="page-schedule">
       <div class="pg-hd"><div class="pg-title">스케줄</div><div class="pg-sub">확정된 작업은 진하게, 검토 대기 중은 흐리게 표시돼요</div></div>
       <div class="sc-ctrl">
@@ -389,13 +442,13 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
         </div>
         <div class="slot-tog">
           <button class="stbtn a-all" id="st-all">전체</button>
-          <button class="stbtn" id="st-1">구좌 1</button>
-          <button class="stbtn" id="st-2">구좌 2</button>
+          <button class="stbtn" id="st-1">1</button>
+          <button class="stbtn" id="st-2">2</button>
         </div>
       </div>
       <div class="leg-row">
-        <div class="leg"><div class="leg-dot" style="background:var(--c1b);border:1px solid var(--c1m)"></div><span style="color:var(--c1d)">구좌 1</span></div>
-        <div class="leg"><div class="leg-dot" style="background:var(--c2b);border:1px solid var(--c2m)"></div><span style="color:var(--c2d)">구좌 2</span></div>
+        <div class="leg"><div class="leg-dot" style="background:var(--c1b);border:1px solid var(--c1m)"></div><span style="color:var(--c1d)">1</span></div>
+        <div class="leg"><div class="leg-dot" style="background:var(--c2b);border:1px solid var(--c2m)"></div><span style="color:var(--c2d)">2</span></div>
         <div class="leg-div"></div>
         <div class="leg"><div class="leg-dot" style="background:#C0DD97;border:1px solid #639922"></div>완료</div>
         <div class="leg"><div class="leg-dot" style="background:var(--surface-1);border:1px dashed var(--border-stronger)"></div><span style="opacity:.6">검토 대기</span></div>
@@ -476,7 +529,7 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
       <div class="abbg-banner"><i class="ti ti-shield-check"></i>ABBG 전용 — 인증된 팀원만 접근할 수 있어요</div>
       <div class="sec-lbl">확인 필요 — 검토 대기 중</div>
       <div id="rev-pending"></div>
-      <div class="sec-lbl" style="margin-top:14px">확정된 전체 작업</div>
+      <div class="sec-lbl" style="margin-top:14px">확정된 작업 목록</div>
       <div id="rev-confirmed"></div>
     </div>
 
@@ -498,10 +551,24 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 </div>
 <div class="mob-tb">
   <button class="mtab active" id="mtab-form"><i class="ti ti-edit"></i><span class="mtab-lbl">요청</span></button>
+  <button class="mtab" id="mtab-requests"><i class="ti ti-list-check"></i><span class="mtab-lbl">현황</span></button>
   <button class="mtab" id="mtab-schedule"><i class="ti ti-calendar"></i><span class="mtab-lbl">스케줄</span></button>
   <button class="mtab" id="mtab-people"><i class="ti ti-users"></i><span class="mtab-lbl">담당자</span></button>
-  <button class="mtab" id="mtab-tutorial"><i class="ti ti-help-circle"></i><span class="mtab-lbl">가이드</span></button>
   <button class="mtab" id="mtab-review"><i class="ti ti-clipboard-check"></i><span class="mtab-lbl">검토</span><span class="mtab-badge" id="mb"></span></button>
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+    <div class="modal-bd" id="modal-bd"></div>
+    <div class="modal-ft">
+      <button class="btn-modal-close" id="modal-close2">닫기</button>
+      <button class="btn-modal-edit" id="modal-edit" style="display:none">✏️ 수정하기</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -526,8 +593,8 @@ const TI = {
   etc:{name:'기타',days:'확인 후 안내',minDays:2,ex:['번역 편집','영문 버전','일본어 현지화'],note:'내용 상세히 적어주시면 일정 확인 후 회신드려요.'}
 };
 const DM = {detail:3,banner:2,package:2,sns:1,print:2,edit:1,etc:2};
-const PAGES = {form:'요청서 작성',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',settings:'설정',lock:'ABBG 전용'};
-const TABS = ['form','schedule','people','tutorial','review','settings','lock'];
+const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',settings:'설정',lock:'ABBG 전용'};
+const TABS = ['form','requests','schedule','people','tutorial','review','settings','lock'];
 
 let wkOff=0, slotF='all', fPri='', unlocked=false, pTarget='';
 let tasks=[], pending=[], people=[], offDays=[];
@@ -541,7 +608,7 @@ const isPast = s => s < TODAY;
 const gOL = s => HOL[s]||(offDays.includes(s)?'회사 휴무':'');
 const nWD = s => {const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+1);while(isO(fmt(d)))d.setDate(d.getDate()+1);return fmt(d);};
 const wdB = (a,b) => {let c=0,d=new Date(a+'T00:00:00');const e=new Date(b+'T00:00:00');while(d<e){if(!isO(fmt(d)))c++;d.setDate(d.getDate()+1);}return c;};
-const sBadge = s => s==='1'?`<span class="sb1"><span class="d1"></span>구좌 1</span>`:s==='2'?`<span class="sb2"><span class="d2"></span>구좌 2</span>`:`<span class="sb-etc">${s||'미배정'}</span>`;
+const sBadge = s => s==='1'?`<span class="sb1"><span class="d1"></span>1</span>`:s==='2'?`<span class="sb2"><span class="d2"></span>2</span>`:`<span class="sb-etc">${s||'-'}</span>`;
 const showT = msg => {const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2400);};
 
 // ── Supabase CRUD ──
@@ -598,6 +665,7 @@ function sw(tab) {
   });
   const mpg=document.getElementById('mpg'); if(mpg) mpg.textContent=PAGES[tab]||'';
   if(tab==='review') renderRev();
+  if(tab==='requests') renderReqList();
   if(tab==='schedule') renderG();
   if(tab==='people') {renderP(); renderO();}
 }
@@ -610,6 +678,7 @@ function swA(tab) {
 
 // ── 이벤트 바인딩 ──
 document.getElementById('nav-form').onclick = () => sw('form');
+document.getElementById('nav-requests').onclick = () => sw('requests');
 document.getElementById('nav-schedule').onclick = () => sw('schedule');
 document.getElementById('nav-people').onclick = () => sw('people');
 document.getElementById('nav-tutorial').onclick = () => sw('tutorial');
@@ -636,12 +705,130 @@ document.getElementById('btn-add-person').onclick = addP;
 document.getElementById('new-person').onkeydown = e => {if(e.key==='Enter') addP();};
 document.getElementById('btn-add-off').onclick = addO;
 document.getElementById('pw-submit').onclick = chPw;
+document.getElementById('modal-close').onclick = closeModal;
+document.getElementById('modal-close2').onclick = closeModal;
+document.getElementById('modal-bg').onclick = e => { if(e.target===document.getElementById('modal-bg')) closeModal(); };
 // 모바일 탭
 document.getElementById('mtab-form').onclick = () => sw('form');
+document.getElementById('mtab-requests').onclick = () => sw('requests');
 document.getElementById('mtab-schedule').onclick = () => sw('schedule');
 document.getElementById('mtab-people').onclick = () => sw('people');
 document.getElementById('mtab-tutorial').onclick = () => sw('tutorial');
 document.getElementById('mtab-review').onclick = () => swA('review');
+
+
+// ── 요청 현황 (누구나) ──
+function renderReqList() {
+  const el = document.getElementById('req-list-content');
+  if(!el) return;
+
+  const pendHtml = pending.length === 0
+    ? '<div style="font-size:12px;color:var(--text-muted);padding:8px 0 4px">대기 중인 요청이 없어요</div>'
+    : pending.map(p => `<div class="req-card pend clickable" data-id="${p.id}" data-pend="true" style="cursor:pointer;">
+        <div class="req-card-hd">
+          <div>
+            <div class="req-card-nm">${p.name}</div>
+            <div class="req-card-mt">요청자 ${p.sub} · 희망 납기 ${p.due.replace(/-/g,'.')}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <span class="req-status pend-status">검토 대기</span>
+            <span class="bpri ${p.priority==='urgent'?'b-urg':'b-nrm'}">${p.priority==='urgent'?'급건':'일반'}</span>
+          </div>
+        </div>
+      </div>`).join('');
+
+  const confHtml = tasks.length === 0
+    ? '<div style="font-size:12px;color:var(--text-muted);padding:8px 0 4px">확정된 작업이 없어요</div>'
+    : tasks.map(t => `<div class="req-card conf clickable" data-id="${t.id}" data-pend="false" style="cursor:pointer;">
+        <div class="req-card-hd">
+          <div>
+            <div class="req-card-nm">${t.name}</div>
+            <div class="req-card-mt">${t.sub} · 납기 ${t.due.replace(/-/g,'.')}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            ${sBadge(t.slot)}
+            <span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span>
+            <span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span>
+          </div>
+        </div>
+      </div>`).join('');
+
+  el.innerHTML = `
+    <div class="sec-lbl">검토 대기 중</div>
+    ${pendHtml}
+    <div class="sec-lbl" style="margin-top:14px">확정된 작업</div>
+    ${confHtml}
+  `;
+
+  // 카드 클릭 → 모달
+  document.querySelectorAll('#req-list-content .clickable').forEach(card => {
+    card.onclick = () => {
+      const id = +card.dataset.id;
+      const isPend = card.dataset.pend === 'true';
+      if(isPend) {
+        const p = pending.find(x=>x.id===id);
+        if(!p) return;
+        const ti = TI[p.type]||{};
+        document.getElementById('modal-title').textContent = p.name;
+        document.getElementById('modal-bd').innerHTML = `
+          <div class="modal-row">
+            <div class="modal-field"><div class="modal-fl">요청자</div><div class="modal-fv">${p.sub}</div></div>
+            <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status pend-status">검토 대기</span></div></div>
+            <div class="modal-field"><div class="modal-fl">작업 유형</div><div class="modal-fv">${ti.name||p.type}${ti.days?' ('+ti.days+')':''}</div></div>
+            <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
+            <div class="modal-field modal-ff"><div class="modal-fl">요청 내용</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.5">${p.desc||'—'}</div></div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button class="btn-modal-cancel" style="padding:5px 12px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:11px;font-weight:600;color:var(--c2d);cursor:pointer;border-color:var(--c2m);">요청 취소</button>
+          </div>`;
+        const editBtn = document.getElementById('modal-edit');
+        editBtn.style.display='inline-flex';
+        editBtn.textContent='✏️ 수정하기';
+        editBtn.onclick = () => {
+          closeModal();
+          sw('form');
+          setTimeout(()=>{
+            document.getElementById('req-person').value=p.sub;
+            document.getElementById('req-type').value=p.type;
+            document.getElementById('req-title').value=p.name;
+            document.getElementById('req-due').value=p.due;
+            document.getElementById('req-desc').value=p.desc||'';
+            setPri(p.priority); onDue(); onType(); runC();
+            rejSilent(p.id);
+          },100);
+        };
+        document.querySelector('.btn-modal-cancel').onclick = async () => {
+          if(!confirm(`"${p.name}" 요청을 취소할까요?`)) return;
+          await sb.from('pending').delete().eq('id',p.id);
+          pending.splice(pending.indexOf(p),1);
+          updB(); closeModal(); renderReqList(); showT('요청이 취소됐어요.');
+        };
+      } else {
+        const t = tasks.find(x=>x.id===id);
+        if(!t) return;
+        document.getElementById('modal-title').textContent = t.name;
+        document.getElementById('modal-bd').innerHTML = `
+          <div class="modal-row">
+            <div class="modal-field"><div class="modal-fl">담당자</div><div class="modal-fv">${t.sub}</div></div>
+            <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span></div></div>
+            <div class="modal-field"><div class="modal-fl">구좌</div><div class="modal-fv">${sBadge(t.slot)}</div></div>
+            <div class="modal-field"><div class="modal-fl">납기일</div><div class="modal-fv">${t.due.replace(/-/g,'.')}</div></div>
+            <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
+            <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
+          </div>`;
+        document.getElementById('modal-edit').style.display='none';
+      }
+      document.getElementById('modal-bg').classList.add('show');
+    };
+  });
+}
+
+async function rejSilent(id) {
+  await sb.from('pending').delete().eq('id', id);
+  const idx = pending.findIndex(x => x.id === id);
+  if(idx >= 0) pending.splice(idx, 1);
+  updB();
+}
 
 // ── 비즈니스 로직 ──
 function tryU() {
@@ -749,7 +936,7 @@ function renderRev() {
         <div class="pend-f pend-ff"><div class="pend-fl">요청 내용</div><div class="pend-fv" style="white-space:pre-wrap;line-height:1.5">${p.desc||'—'}</div></div>
       </div>
       <div class="rc-asgn">
-        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:11px;padding:5px 8px;"><option value="">선택</option><option value="1">구좌 1</option><option value="2">구좌 2</option></select></div>
+        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:11px;padding:5px 8px;"><option value="">선택</option><option value="1">1</option><option value="2">2</option></select></div>
         <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}" style="font-size:11px;padding:5px 8px;"></div>
         <div><div class="rc-al">시작일 (자동)</div><input type="date" id="cstart-${p.id}" style="font-size:11px;padding:5px 8px;background:var(--surface-1);" readonly></div>
       </div>
@@ -764,16 +951,13 @@ function renderRev() {
     });
   }
   const cEl=document.getElementById('rev-confirmed');
-  if(!tasks.length){cEl.innerHTML=`<div style="font-size:11px;color:var(--text-muted);padding:6px 0">확정된 작업이 없어요</div>`; return;}
+  if(!tasks.length){cEl.innerHTML=`<div style="font-size:12px;color:var(--text-muted);padding:6px 0">확정된 작업이 없어요</div>`; return;}
   cEl.innerHTML=tasks.map(t=>`<div class="conf-card">
-    <div class="conf-hd"><div><div class="conf-nm">${t.name}</div><div class="conf-mt">${t.sub} · 납기 ${t.due.replace(/-/g,'.')}</div></div>
-    <div style="display:flex;align-items:center;gap:4px">${sBadge(t.slot)}<span class="bpri ${t.done?'b-don':t.priority==='urgent'?'b-urg':'b-nrm'}">${t.done?'완료':t.priority==='urgent'?'급건':'일반'}</span></div></div>
-    <div class="conf-bd"><button class="btn-done" data-id="${t.id}">${t.done?'↩ 미완료':'✓ 완료'}</button><button class="btn-del" data-id="${t.id}">삭제</button></div>
+    <div class="conf-hd">
+      <div><div class="conf-nm">${t.name}</div><div class="conf-mt">${t.sub} · 납기 ${t.due.replace(/-/g,'.')}</div></div>
+      <div style="display:flex;align-items:center;gap:5px">${sBadge(t.slot)}<span class="bpri ${t.done?'b-don':t.priority==='urgent'?'b-urg':'b-nrm'}">${t.done?'완료':t.priority==='urgent'?'급건':'일반'}</span></div>
+    </div>
   </div>`).join('');
-  tasks.forEach(t=>{
-    document.querySelector(`.btn-done[data-id="${t.id}"]`).onclick = () => toggleDone(t.id);
-    document.querySelector(`.btn-del[data-id="${t.id}"]`).onclick = () => delTask(t.id);
-  });
 }
 async function appR(id) {
   const p=pending.find(x=>x.id===id); if(!p) return;
@@ -868,6 +1052,7 @@ function renderG() {
   const confRows=slotF==='all'?tasks:tasks.filter(t=>t.slot===slotF);
   const pendRows=slotF==='all'?pending:[];
   const allRows=[...confRows.map(t=>({...t,isPend:false})),...pendRows.map(p=>({id:p.id,name:p.name,sub:p.sub,start:p.due,due:p.due,slot:'?',done:false,isPend:true,priority:p.priority}))];
+  // 간트 행 클릭 — 이전에 바인딩된 이벤트 제거 후 재바인딩
   document.getElementById('gb').innerHTML=!allRows.length
     ?`<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:12px">이 주차에 작업이 없어요</td></tr>`
     :allRows.map(t=>{
@@ -881,7 +1066,7 @@ function renderG() {
         if(inR) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}"></div></div></td>`;
         return`<td class="dc${hc}"><div class="bw"></div></td>`;
       }).join('');
-      return`<tr class="${t.isPend?'row-p':''}"><td class="tnc"><div class="${t.isPend?'tn-p':'tn'}">${t.name}</div><div class="ts-s">${t.sub}</div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
+      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div class="${t.isPend?'tn-p':'tn'}">${t.name}</div><div class="ts-s">${t.sub}</div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
     }).join('');
 }
 
