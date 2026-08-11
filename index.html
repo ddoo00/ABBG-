@@ -178,17 +178,17 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .gt{width:100%;border-collapse:collapse;}
 .gt th{font-size:10px;font-weight:700;color:var(--text-muted);text-align:left;padding:6px;border-bottom:2px solid var(--border-strong);background:var(--surface-1);}
 .gt th.dc{text-align:center;}
-.gt td{height:30px;padding:0 6px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.gt td{height:38px;padding:0 6px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .gt tr:hover td{background:var(--surface-1);}
 .gt th.hol{background:#fff8f6;}.gt td.hol{background:#fffaf9;}
-.tnc{min-width:100px;max-width:130px;padding:0 6px;}
-.tn{font-size:12px;font-weight:600;color:var(--text-primary);}
+.tnc{min-width:110px;max-width:150px;padding:0 8px;}
+.tn{font-size:12px;font-weight:600;color:var(--text-primary);line-height:1.3;}
 .tn-p{font-size:12px;font-weight:500;color:var(--text-muted);}
-.ts-s{font-size:10px;color:var(--text-muted);margin-top:1px;}
+.ts-s{font-size:10px;color:var(--text-muted);margin-top:3px;}
 .gt tr.row-p td{opacity:.5;}
 .dc{width:60px;text-align:center;padding:0 2px;}
-.bw{display:flex;align-items:center;justify-content:center;height:30px;}
-.bar{height:18px;border-radius:3px;width:100%;display:flex;align-items:center;}
+.bw{display:flex;align-items:center;justify-content:center;height:38px;}
+.bar{height:22px;border-radius:4px;width:100%;display:flex;align-items:center;}
 .bar-s1{background:var(--c1m);border:1px solid var(--c1);}
 .bar-s2{background:var(--c2m);border:1px solid var(--c2);}
 .bar-done{background:#C0DD97;border:1px solid #639922;}
@@ -562,7 +562,6 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
   <div class="modal">
     <div class="modal-hd">
       <div class="modal-title" id="modal-title"></div>
-      <button class="modal-close" id="modal-close">×</button>
     </div>
     <div class="modal-bd" id="modal-bd"></div>
     <div class="modal-ft">
@@ -708,7 +707,6 @@ document.getElementById('new-person').onkeydown = e => {if(e.key==='Enter') addP
 document.getElementById('btn-add-off').onclick = addO;
 document.getElementById('pw-submit').onclick = chPw;
 function closeModal(){document.getElementById('modal-bg').classList.remove('show');}
-document.getElementById('modal-close').onclick = closeModal;
 document.getElementById('modal-close2').onclick = closeModal;
 document.getElementById('modal-bg').onclick = e => { if(e.target===document.getElementById('modal-bg')) closeModal(); };
 // 모바일 탭
@@ -1229,7 +1227,10 @@ function renderG() {
               <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
               <div class="modal-field modal-ff"><div class="modal-fl">요청 내용</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.5">${p.desc||'—'}</div></div>
             </div>`;
-          const editBtn = document.getElementById('modal-edit');
+          // 삭제 버튼 숨기기 (대기중은 취소 버튼 사용)
+        const delBtnP = document.getElementById('modal-del');
+        if(delBtnP) delBtnP.style.display='none';
+        const editBtn = document.getElementById('modal-edit');
           editBtn.style.display = 'inline-flex';
           editBtn.textContent = '수정';
           editBtn.onclick = () => {
