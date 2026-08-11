@@ -816,8 +816,40 @@ function renderReqList() {
             <div class="modal-field"><div class="modal-fl">납기일</div><div class="modal-fv">${t.due.replace(/-/g,'.')}</div></div>
             <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
             <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
+          </div>
+          <div style="padding:8px 10px;background:#fffbee;border:1px solid #FAC775;border-radius:6px;font-size:11px;color:#633806;">
+            ⚠️ 확정된 작업을 수정하면 ABBG에서 재검토가 필요할 수 있어요.
           </div>`;
-        document.getElementById('modal-edit').style.display='none';
+        const editBtn2 = document.getElementById('modal-edit');
+        editBtn2.style.display='inline-flex';
+        editBtn2.textContent='✏️ 수정하기';
+        editBtn2.onclick = async () => {
+          closeModal();
+          // 확정 작업을 pending으로 전환
+          const {data, error} = await sb.from('pending').insert([{
+            name: t.name, sub: t.sub, type: t.slot==='1'?'etc':'etc',
+            due: t.due, priority: t.priority,
+            description: '(확정 작업 수정 요청) 내용을 수정해주세요.',
+            reg_at: TODAY
+          }]).select();
+          if(!error && data) {
+            await sb.from('tasks').delete().eq('id', t.id);
+            tasks.splice(tasks.indexOf(t), 1);
+            pending.push({id:data[0].id, name:t.name, sub:t.sub, type:'etc',
+              due:t.due, priority:t.priority,
+              desc:'(확정 작업 수정 요청) 내용을 수정해주세요.', regAt:TODAY});
+            updB();
+            sw('form');
+            setTimeout(()=>{
+              document.getElementById('req-person').value = t.sub;
+              document.getElementById('req-due').value = t.due;
+              document.getElementById('req-title').value = t.name;
+              document.getElementById('req-desc').value = '';
+              setPri(t.priority); onDue(); runC();
+            }, 100);
+            showT('수정 모드로 전환됐어요. 내용을 수정하고 다시 등록해주세요!');
+          }
+        };
       }
       document.getElementById('modal-bg').classList.add('show');
     };
@@ -1049,8 +1081,10 @@ function renderG() {
       return`<th class="dc${off?' hol':isT?' today-col':''}"><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${gOL(ds)}</span>`:''}</th>`;
     }).join('')+'</tr>';
   const ds=days.map(fmt);
-  const confRows=slotF==='all'?tasks:tasks.filter(t=>t.slot===slotF);
-  const pendRows=slotF==='all'?pending:[];
+  const weekStart=ds[0], weekEnd=ds[ds.length-1];
+  const inWeek=t=>(t.start<=weekEnd && t.due>=weekStart);
+  const confRows=(slotF==='all'?tasks:tasks.filter(t=>t.slot===slotF)).filter(inWeek);
+  const pendRows=(slotF==='all'?pending:[]).filter(p=>p.due>=weekStart&&p.due<=weekEnd);
   const allRows=[...confRows.map(t=>({...t,isPend:false})),...pendRows.map(p=>({id:p.id,name:p.name,sub:p.sub,start:p.due,due:p.due,slot:'?',done:false,isPend:true,priority:p.priority}))];
   // 간트 행 클릭 — 이전에 바인딩된 이벤트 제거 후 재바인딩
   document.getElementById('gb').innerHTML=!allRows.length
@@ -1068,6 +1102,89 @@ function renderG() {
       }).join('');
       return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div class="${t.isPend?'tn-p':'tn'}">${t.name}</div><div class="ts-s">${t.sub}</div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
     }).join('');
+
+  // 간트 행 클릭 이벤트
+  setTimeout(() => {
+    document.querySelectorAll('#gb tr.clickable').forEach(tr => {
+      tr.onclick = () => {
+        const id = +tr.dataset.id;
+        const isPend = tr.dataset.pend === 'true';
+        if(isPend) {
+          const p = pending.find(x => x.id === id);
+          if(!p) return;
+          const ti = TI[p.type]||{};
+          document.getElementById('modal-title').textContent = p.name;
+          document.getElementById('modal-bd').innerHTML = `
+            <div class="modal-row">
+              <div class="modal-field"><div class="modal-fl">요청자</div><div class="modal-fv">${p.sub}</div></div>
+              <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status pend-status">검토 대기</span></div></div>
+              <div class="modal-field"><div class="modal-fl">작업 유형</div><div class="modal-fv">${ti.name||p.type}${ti.days?' ('+ti.days+')':''}</div></div>
+              <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
+              <div class="modal-field modal-ff"><div class="modal-fl">요청 내용</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.5">${p.desc||'—'}</div></div>
+            </div>`;
+          const editBtn = document.getElementById('modal-edit');
+          editBtn.style.display = 'inline-flex';
+          editBtn.textContent = '✏️ 수정하기';
+          editBtn.onclick = () => {
+            closeModal();
+            sw('form');
+            setTimeout(() => {
+              document.getElementById('req-person').value = p.sub;
+              document.getElementById('req-type').value = p.type;
+              document.getElementById('req-title').value = p.name;
+              document.getElementById('req-due').value = p.due;
+              document.getElementById('req-desc').value = p.desc||'';
+              setPri(p.priority); onDue(); onType(); runC();
+              rejSilent(p.id);
+            }, 100);
+          };
+        } else {
+          const t = tasks.find(x => x.id === id);
+          if(!t) return;
+          document.getElementById('modal-title').textContent = t.name;
+          document.getElementById('modal-bd').innerHTML = `
+            <div class="modal-row">
+              <div class="modal-field"><div class="modal-fl">담당자</div><div class="modal-fv">${t.sub}</div></div>
+              <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span></div></div>
+              <div class="modal-field"><div class="modal-fl">구좌</div><div class="modal-fv">${sBadge(t.slot)}</div></div>
+              <div class="modal-field"><div class="modal-fl">납기일</div><div class="modal-fv">${t.due.replace(/-/g,'.')}</div></div>
+              <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
+              <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
+            </div>
+            <div style="padding:8px 10px;background:#fffbee;border:1px solid #FAC775;border-radius:6px;font-size:11px;color:#633806;">
+              ⚠️ 확정된 작업을 수정하면 ABBG에서 재검토가 필요할 수 있어요.
+            </div>`;
+          const editBtn2 = document.getElementById('modal-edit');
+          editBtn2.style.display = 'inline-flex';
+          editBtn2.textContent = '✏️ 수정하기';
+          editBtn2.onclick = async () => {
+            closeModal();
+            const {data, error} = await sb.from('pending').insert([{
+              name: t.name, sub: t.sub, type: 'etc', due: t.due,
+              priority: t.priority, description: '', reg_at: TODAY
+            }]).select();
+            if(!error && data) {
+              await sb.from('tasks').delete().eq('id', t.id);
+              tasks.splice(tasks.indexOf(t), 1);
+              pending.push({id:data[0].id, name:t.name, sub:t.sub, type:'etc',
+                due:t.due, priority:t.priority, desc:'', regAt:TODAY});
+              updB();
+              sw('form');
+              setTimeout(() => {
+                document.getElementById('req-person').value = t.sub;
+                document.getElementById('req-due').value = t.due;
+                document.getElementById('req-title').value = t.name;
+                document.getElementById('req-desc').value = '';
+                setPri(t.priority); onDue(); runC();
+              }, 100);
+              showT('수정 모드예요. 내용을 수정하고 다시 등록해주세요!');
+            }
+          };
+        }
+        document.getElementById('modal-bg').classList.add('show');
+      };
+    });
+  }, 50);
 }
 
 // ── 초기 로드 ──
