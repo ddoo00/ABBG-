@@ -554,12 +554,10 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
       <div class="modal-title" id="modal-title"></div>
     </div>
     <div class="modal-bd" id="modal-bd"></div>
-    <div class="modal-ft" id="modal-ft" style="flex-direction:column;gap:8px;align-items:stretch;">
-      <div id="modal-warn" style="display:none;font-size:10px;color:#633806;">⚠️ 확정된 작업을 수정하면 ABBG 재검토가 필요할 수 있어요.</div>
-      <div style="display:flex;gap:6px;justify-content:flex-end;">
-        <button class="btn-modal-close" id="modal-close2">닫기</button>
-        <button class="btn-modal-edit" id="modal-edit" style="display:none">수정</button>
-      </div>
+    <div class="modal-ft" id="modal-ft" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+      <div id="modal-warn" style="display:none;font-size:10px;color:#633806;margin-right:auto;">⚠️ 확정 작업 수정 시 ABBG 재검토 필요</div>
+      <button class="btn-modal-close" id="modal-close2">닫기</button>
+      <button class="btn-modal-edit" id="modal-edit" style="display:none">수정</button>
     </div>
   </div>
 </div>
