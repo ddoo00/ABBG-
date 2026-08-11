@@ -529,8 +529,7 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
       <div class="abbg-banner"><i class="ti ti-shield-check"></i>ABBG 전용 — 인증된 팀원만 접근할 수 있어요</div>
       <div class="sec-lbl">확인 필요 — 검토 대기 중</div>
       <div id="rev-pending"></div>
-      <div class="sec-lbl" style="margin-top:14px">확정된 작업 목록</div>
-      <div id="rev-confirmed"></div>
+
     </div>
 
     <div class="page" id="page-settings">
@@ -566,7 +565,7 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
     <div class="modal-bd" id="modal-bd"></div>
     <div class="modal-ft">
       <button class="btn-modal-close" id="modal-close2">닫기</button>
-      <button class="btn-modal-edit" id="modal-edit" style="display:none">✏️ 수정하기</button>
+      <button class="btn-modal-edit" id="modal-edit" style="display:none">수정하기</button>
     </div>
   </div>
 </div>
@@ -784,7 +783,7 @@ function renderReqList() {
           </div>`;
         const editBtn = document.getElementById('modal-edit');
         editBtn.style.display='inline-flex';
-        editBtn.textContent='✏️ 수정하기';
+        editBtn.textContent='수정하기';
         editBtn.onclick = () => {
           closeModal();
           sw('form');
@@ -822,7 +821,7 @@ function renderReqList() {
           </div>`;
         const editBtn2 = document.getElementById('modal-edit');
         editBtn2.style.display='inline-flex';
-        editBtn2.textContent='✏️ 수정하기';
+        editBtn2.textContent='수정하기';
         editBtn2.onclick = async () => {
           closeModal();
           // 확정 작업을 pending으로 전환
@@ -981,6 +980,22 @@ function renderRev() {
       calcS(); cdue.onchange=calcS;
       document.querySelector(`.btn-ap[data-id="${p.id}"]`).onclick = () => appR(p.id);
       document.querySelector(`.btn-rj[data-id="${p.id}"]`).onclick = () => rejR(p.id);
+      // 헤더 클릭 → 요청 내용 모달
+      const hd = document.querySelector(`[data-preview="${p.id}"]`);
+      if(hd) hd.onclick = () => {
+        const ti2 = TI[p.type]||{};
+        document.getElementById('modal-title').textContent = p.name;
+        document.getElementById('modal-bd').innerHTML = `
+          <div class="modal-row">
+            <div class="modal-field"><div class="modal-fl">요청자</div><div class="modal-fv">${p.sub}</div></div>
+            <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${p.priority==='urgent'?'b-urg':'b-nrm'}">${p.priority==='urgent'?'급건':'일반'}</span></div></div>
+            <div class="modal-field"><div class="modal-fl">작업 유형</div><div class="modal-fv">${ti2.name||p.type}${ti2.days?' ('+ti2.days+')':''}</div></div>
+            <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
+            <div class="modal-field modal-ff"><div class="modal-fl">요청 내용 · 드라이브</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.6">${p.desc||'—'}</div></div>
+          </div>`;
+        document.getElementById('modal-edit').style.display='none';
+        document.getElementById('modal-bg').classList.add('show');
+      };
     });
   }
   const cEl=document.getElementById('rev-confirmed');
@@ -1124,7 +1139,7 @@ function renderG() {
             </div>`;
           const editBtn = document.getElementById('modal-edit');
           editBtn.style.display = 'inline-flex';
-          editBtn.textContent = '✏️ 수정하기';
+          editBtn.textContent = '수정하기';
           editBtn.onclick = () => {
             closeModal();
             sw('form');
@@ -1156,7 +1171,7 @@ function renderG() {
             </div>`;
           const editBtn2 = document.getElementById('modal-edit');
           editBtn2.style.display = 'inline-flex';
-          editBtn2.textContent = '✏️ 수정하기';
+          editBtn2.textContent = '수정하기';
           editBtn2.onclick = async () => {
             closeModal();
             const {data, error} = await sb.from('pending').insert([{
