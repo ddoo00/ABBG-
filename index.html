@@ -151,15 +151,6 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .btn-ap:hover{opacity:.85;}
 .btn-rj{padding:5px 9px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:6px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;}
 .btn-rj:hover{border-color:var(--c2);color:var(--c2d);}
-.conf-card{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:5px;}
-.conf-hd{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:7px;}
-.conf-nm{font-size:12px;font-weight:600;color:var(--text-primary);}
-.conf-mt{font-size:10px;color:var(--text-muted);}
-.conf-bd{padding:5px 12px;border-top:1px solid var(--border);display:flex;gap:5px;}
-.btn-done{padding:3px 8px;background:var(--c1b);border:1px solid var(--c1m);border-radius:5px;font-size:10px;font-weight:600;color:var(--c1d);cursor:pointer;}
-.btn-done:hover{background:var(--c1m);}
-.btn-del{padding:3px 8px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:5px;font-size:10px;font-weight:600;color:var(--text-muted);cursor:pointer;}
-.btn-del:hover{border-color:var(--c2);color:var(--c2d);}
 .sc-ctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;flex-wrap:wrap;gap:6px;}
 .wk-nav{display:flex;align-items:center;gap:4px;}
 .nav-btn{padding:4px 10px;font-size:11px;font-weight:600;border:1px solid var(--border-strong);border-radius:6px;background:var(--surface-2);color:var(--text-secondary);cursor:pointer;}
@@ -206,7 +197,6 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .mg-box{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:12px;}
 .mg-ttl{font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:8px;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
 .mg-ttl i{font-size:13px;color:var(--text-muted);}
-.off-hint{font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5;padding:6px 8px;background:var(--surface-1);border-radius:5px;border:1px solid var(--border);}
 .add-row{display:flex;gap:4px;}
 .add-row input{flex:1;font-size:12px;padding:6px 9px;}
 .add-btn{padding:6px 10px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
@@ -564,9 +554,12 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
       <div class="modal-title" id="modal-title"></div>
     </div>
     <div class="modal-bd" id="modal-bd"></div>
-    <div class="modal-ft">
-      <button class="btn-modal-close" id="modal-close2">닫기</button>
-      <button class="btn-modal-edit" id="modal-edit" style="display:none">수정하기</button>
+    <div class="modal-ft" id="modal-ft" style="flex-direction:column;gap:8px;align-items:stretch;">
+      <div id="modal-warn" style="display:none;font-size:10px;color:#633806;">⚠️ 확정된 작업을 수정하면 ABBG 재검토가 필요할 수 있어요.</div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;">
+        <button class="btn-modal-close" id="modal-close2">닫기</button>
+        <button class="btn-modal-edit" id="modal-edit" style="display:none">수정</button>
+      </div>
     </div>
   </div>
 </div>
