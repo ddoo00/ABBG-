@@ -785,7 +785,7 @@ function renderReqList() {
           </div>`;
         const editBtn = document.getElementById('modal-edit');
         editBtn.style.display='inline-flex';
-        editBtn.textContent='수정하기';
+        editBtn.textContent='수정';
         editBtn.onclick = () => {
           closeModal();
           sw('form');
@@ -824,7 +824,7 @@ function renderReqList() {
           </div>`;
         const editBtn2 = document.getElementById('modal-edit');
         editBtn2.style.display='inline-flex';
-        editBtn2.textContent='수정하기';
+        editBtn2.textContent='수정';
         editBtn2.onclick = async () => {
           closeModal();
           // 확정 작업을 pending으로 전환
@@ -1231,7 +1231,7 @@ function renderG() {
             </div>`;
           const editBtn = document.getElementById('modal-edit');
           editBtn.style.display = 'inline-flex';
-          editBtn.textContent = '수정하기';
+          editBtn.textContent = '수정';
           editBtn.onclick = () => {
             closeModal();
             sw('form');
@@ -1264,7 +1264,7 @@ function renderG() {
             </div>`;
           const editBtn2 = document.getElementById('modal-edit');
           editBtn2.style.display = 'inline-flex';
-          editBtn2.textContent = '수정하기';
+          editBtn2.textContent = '수정';
           editBtn2.onclick = async () => {
             closeModal();
             const {data, error} = await sb.from('pending').insert([{
