@@ -571,19 +571,19 @@ function renderReqList() {
   const confHtml = filteredTasks.length === 0
     ? `<div style="font-size:12px;color:var(--text-muted);padding:8px 0 4px">${tasks.length===0?'확정된 작업이 없어요':'해당하는 작업이 없어요'}</div>`
     : filteredTasks.map(t => `<div class="req-card conf clickable" data-id="${t.id}" data-pend="false" style="cursor:pointer;">
-        <div class="req-card-hd">
-          <div>
-            <div class="req-card-nm">${esc(t.name)}</div>
-            <div class="req-card-mt">${esc(t.sub)} · 납기 ${t.due.replace(/-/g,'.')}</div>
+        <div class="req-card-hd" style="align-items:center;border-bottom:none;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+            <button class="btn-quick-done${t.done?' done':''}" data-id="${t.id}" type="button">${t.done?'미완료로 변경':'완료 처리'}</button>
+            <div style="min-width:0;">
+              <div class="req-card-nm">${esc(t.name)}</div>
+              <div class="req-card-mt">${esc(t.sub)} · 납기 ${t.due.replace(/-/g,'.')}</div>
+            </div>
           </div>
           <div style="display:flex;align-items:center;gap:5px">
             ${sBadge(t.slot)}
             <span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span>
             <span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span>
           </div>
-        </div>
-        <div class="req-card-ft">
-          <button class="btn-quick-done${t.done?' done':''}" data-id="${t.id}" type="button" style="margin-left:auto;">${t.done?'미완료로 변경':'✓ 완료 처리'}</button>
         </div>
       </div>`).join('');
 
@@ -1012,12 +1012,12 @@ function renderRev() {
   cEl.innerHTML = dnTogHtml() + (filteredTasks.length===0
     ? `<div style="font-size:12px;color:var(--text-muted);padding:6px 0">해당하는 작업이 없어요</div>`
     : filteredTasks.map(t=>`<div class="req-card conf clickable" data-id="${t.id}" style="cursor:pointer;">
-    <div class="req-card-hd">
-      <div><div class="req-card-nm">${esc(t.name)}</div><div class="req-card-mt">${esc(t.sub)} · 납기 ${t.due.replace(/-/g,'.')}</div></div>
+    <div class="req-card-hd" style="align-items:center;border-bottom:none;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+        <button class="btn-quick-done${t.done?' done':''}" data-id="${t.id}" type="button">${t.done?'미완료로 변경':'완료 처리'}</button>
+        <div style="min-width:0;"><div class="req-card-nm">${esc(t.name)}</div><div class="req-card-mt">${esc(t.sub)} · 납기 ${t.due.replace(/-/g,'.')}</div></div>
+      </div>
       <div style="display:flex;align-items:center;gap:5px">${sBadge(t.slot)}<span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div>
-    </div>
-    <div class="req-card-ft">
-      <button class="btn-quick-done${t.done?' done':''}" data-id="${t.id}" type="button" style="margin-left:auto;">${t.done?'미완료로 변경':'✓ 완료 처리'}</button>
     </div>
   </div>`).join(''));
   bindDnTog(cEl);

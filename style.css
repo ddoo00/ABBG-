@@ -250,9 +250,9 @@ input::placeholder,textarea::placeholder{font-size:11px;color:var(--text-muted);
 .dn-tog{display:flex;gap:2px;background:var(--surface-1);padding:2px;border-radius:6px;border:1px solid var(--border);margin-bottom:8px;width:fit-content;}
 .dn-tbtn{padding:3px 10px;font-size:11px;font-weight:600;border:none;border-radius:4px;background:transparent;color:var(--text-muted);cursor:pointer;}
 .dn-tbtn.active{background:var(--surface-2);color:var(--text-primary);}
-.btn-quick-done{padding:5px 11px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
-.btn-quick-done:not(.done){background:var(--c1);border:none;color:#fff;}
-.btn-quick-done:not(.done):hover{opacity:.85;}
+.btn-quick-done{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.btn-quick-done:not(.done){background:#1a1a18;border:none;color:#fff;}
+.btn-quick-done:not(.done):hover{opacity:.82;}
 .btn-quick-done.done{background:var(--surface-1);border:1px solid var(--border-strong);color:var(--text-secondary);}
 .btn-quick-done.done:hover{border-color:var(--border-stronger);}
 .btn-quick-done:disabled{opacity:.5;cursor:not-allowed;}
