@@ -337,6 +337,20 @@ const TABS = ['form','requests','schedule','people','tutorial','review','setting
 
 let wkOff=0, slotF='all', fPri='', unlocked=false, pTarget='';
 let tasks=[], pending=[], people=[], offDays=[];
+let taskFilter='active'; // 'active' | 'done' | 'all' — 확정된 작업 목록 필터(요청 현황 · 검토 탭 공용)
+const filterTasks = list => taskFilter==='active' ? list.filter(t=>!t.done) : taskFilter==='done' ? list.filter(t=>t.done) : list;
+function dnTogHtml() {
+  return `<div class="dn-tog">
+    <button class="dn-tbtn${taskFilter==='active'?' active':''}" data-f="active" type="button">진행중</button>
+    <button class="dn-tbtn${taskFilter==='done'?' active':''}" data-f="done" type="button">완료</button>
+    <button class="dn-tbtn${taskFilter==='all'?' active':''}" data-f="all" type="button">전체</button>
+  </div>`;
+}
+function bindDnTog(root) {
+  root.querySelectorAll('.dn-tbtn').forEach(btn => {
+    btn.onclick = () => { taskFilter = btn.dataset.f; renderReqList(); renderRev(); };
+  });
+}
 
 // ── 유틸 ──
 // 사용자가 입력한 문자열(작업명/담당자/요청내용 등)을 화면에 그대로 꽂아 넣을 때
@@ -351,7 +365,17 @@ const gOL = s => HOL[s]||(offDays.includes(s)?'회사 휴무':'');
 const nWD = s => {const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+1);while(isO(fmt(d)))d.setDate(d.getDate()+1);return fmt(d);};
 const wdB = (a,b) => {let c=0,d=new Date(a+'T00:00:00');const e=new Date(b+'T00:00:00');while(d<e){if(!isO(fmt(d)))c++;d.setDate(d.getDate()+1);}return c;};
 const sBadge = s => s==='1'?`<span class="sb1"><span class="d1"></span>1</span>`:s==='2'?`<span class="sb2"><span class="d2"></span>2</span>`:`<span class="sb-etc">${s||'-'}</span>`;
-const showT = msg => {const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2400);};
+let __toastTimer = null;
+const showT = (msg, opts) => {
+  opts = opts || {};
+  const el=document.getElementById('toast');
+  el.innerHTML = esc(msg) + (opts.undo ? ` <button id="toast-undo-btn" style="margin-left:8px;background:none;border:none;color:#8FD9BE;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;font-size:12px;pointer-events:auto;">실행취소</button>` : '');
+  el.classList.add('show');
+  clearTimeout(__toastTimer);
+  const undoBtn = document.getElementById('toast-undo-btn');
+  if(undoBtn) undoBtn.onclick = () => { el.classList.remove('show'); opts.undo(); };
+  __toastTimer = setTimeout(()=>el.classList.remove('show'), opts.duration || 3200);
+};
 
 // ── 삭제 확인 모달 (native confirm() 대체) ──
 function confirmDanger(message, opts) {
@@ -543,9 +567,10 @@ function renderReqList() {
         </div>
       </div>`).join('');
 
-  const confHtml = tasks.length === 0
-    ? '<div style="font-size:12px;color:var(--text-muted);padding:8px 0 4px">확정된 작업이 없어요</div>'
-    : tasks.map(t => `<div class="req-card conf clickable" data-id="${t.id}" data-pend="false" style="cursor:pointer;">
+  const filteredTasks = filterTasks(tasks);
+  const confHtml = filteredTasks.length === 0
+    ? `<div style="font-size:12px;color:var(--text-muted);padding:8px 0 4px">${tasks.length===0?'확정된 작업이 없어요':'해당하는 작업이 없어요'}</div>`
+    : filteredTasks.map(t => `<div class="req-card conf clickable" data-id="${t.id}" data-pend="false" style="cursor:pointer;">
         <div class="req-card-hd">
           <div>
             <div class="req-card-nm">${esc(t.name)}</div>
@@ -557,14 +582,26 @@ function renderReqList() {
             <span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span>
           </div>
         </div>
+        <div class="req-card-ft">
+          <button class="btn-quick-done${t.done?' done':''}" data-id="${t.id}" type="button" style="margin-left:auto;">${t.done?'미완료로 변경':'✓ 완료 처리'}</button>
+        </div>
       </div>`).join('');
 
   el.innerHTML = `
     <div class="sec-lbl">검토 대기 중</div>
     ${pendHtml}
     <div class="sec-lbl" style="margin-top:14px">확정된 작업</div>
+    ${dnTogHtml()}
     ${confHtml}
   `;
+  bindDnTog(el);
+  el.querySelectorAll('.btn-quick-done').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      btn.disabled = true;
+      try { await toggleDone(+btn.dataset.id); } finally { btn.disabled = false; }
+    };
+  });
 
   // 카드 클릭 → 모달
   document.querySelectorAll('#req-list-content .clickable').forEach(card => {
@@ -609,7 +646,8 @@ function renderReqList() {
           if(!(await confirmDanger(`"${p.name}" 요청을 취소할까요?`, {title:'요청 취소', okLabel:'취소하기'}))) return;
           cancelBtn.disabled = true;
           try {
-            await sb.from('pending').delete().eq('id',p.id);
+            const { error } = await sb.from('pending').delete().eq('id',p.id);
+            if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
             pending.splice(pending.indexOf(p),1);
             updB(); closeModal(); renderReqList(); showT('요청이 취소됐어요.');
           } finally {
@@ -627,7 +665,8 @@ function renderReqList() {
 }
 
 async function rejSilent(id) {
-  await sb.from('pending').delete().eq('id', id);
+  const { error } = await sb.from('pending').delete().eq('id', id);
+  if(error){ showT('기존 요청 정리에 실패했어요 — 검토 탭에서 중복 여부를 확인해주세요.'); }
   const idx = pending.findIndex(x => x.id === id);
   if(idx >= 0) pending.splice(idx, 1);
   updB();
@@ -675,28 +714,36 @@ function showTaskModal(t) {
   editBtn.textContent='수정';
   editBtn.onclick = async () => {
     editBtn.disabled=true;
-    closeModal();
     // 확정 작업을 pending으로 전환 (기존 요청 내용 · 드라이브 경로는 그대로 유지)
     const {data, error} = await sb.from('pending').insert([{
       name: t.name, sub: t.sub, type: 'etc', due: t.due,
       priority: t.priority, description: t.desc||'', reg_at: TODAY
     }]).select();
-    if(!error && data) {
-      await sb.from('tasks').delete().eq('id', t.id);
-      tasks.splice(tasks.indexOf(t), 1);
-      pending.push({id:data[0].id, name:t.name, sub:t.sub, type:'etc',
-        due:t.due, priority:t.priority, desc:t.desc||'', regAt:TODAY});
-      updB(); renderRev(); renderG(); renderReqList(); renderRevSchedule();
-      sw('form');
-      setTimeout(()=>{
-        document.getElementById('req-person').value = t.sub;
-        document.getElementById('req-due').value = t.due;
-        document.getElementById('req-title').value = t.name;
-        document.getElementById('req-desc').value = t.desc||'';
-        setPri(t.priority); onDue(); runC();
-      }, 100);
-      showT('수정 모드로 전환됐어요. 내용을 확인하고 다시 등록해주세요!');
+    if(error || !data) {
+      editBtn.disabled=false;
+      alert('수정 모드 전환에 실패했어요: '+(error?error.message:'알 수 없는 오류')+'\n다시 시도해주세요.');
+      return;
     }
+    const { error: delErr } = await sb.from('tasks').delete().eq('id', t.id);
+    if(delErr) {
+      // pending엔 이미 복사됐는데 원본 확정 작업을 못 지운 상태 — 중복이 생길 수 있어 명확히 알려줌
+      editBtn.disabled=false;
+      alert('요청 내용은 복사됐지만 기존 확정 작업 삭제에 실패했어요: '+delErr.message+'\n검토 탭에서 중복된 작업이 없는지 확인해주세요.');
+    }
+    tasks.splice(tasks.indexOf(t), 1);
+    pending.push({id:data[0].id, name:t.name, sub:t.sub, type:'etc',
+      due:t.due, priority:t.priority, desc:t.desc||'', regAt:TODAY});
+    updB(); renderRev(); renderG(); renderReqList(); renderRevSchedule();
+    closeModal();
+    sw('form');
+    setTimeout(()=>{
+      document.getElementById('req-person').value = t.sub;
+      document.getElementById('req-due').value = t.due;
+      document.getElementById('req-title').value = t.name;
+      document.getElementById('req-desc').value = t.desc||'';
+      setPri(t.priority); onDue(); runC();
+    }, 100);
+    showT('수정 모드로 전환됐어요. 내용을 확인하고 다시 등록해주세요!');
   };
   document.getElementById('modal-bg').classList.add('show');
 }
@@ -961,12 +1008,26 @@ function renderRev() {
   }
   const cEl=document.getElementById('rev-confirmed');
   if(!tasks.length){cEl.innerHTML=`<div style="font-size:12px;color:var(--text-muted);padding:6px 0">확정된 작업이 없어요</div>`; return;}
-  cEl.innerHTML=tasks.map(t=>`<div class="req-card conf clickable" data-id="${t.id}" style="cursor:pointer;">
+  const filteredTasks = filterTasks(tasks);
+  cEl.innerHTML = dnTogHtml() + (filteredTasks.length===0
+    ? `<div style="font-size:12px;color:var(--text-muted);padding:6px 0">해당하는 작업이 없어요</div>`
+    : filteredTasks.map(t=>`<div class="req-card conf clickable" data-id="${t.id}" style="cursor:pointer;">
     <div class="req-card-hd">
       <div><div class="req-card-nm">${esc(t.name)}</div><div class="req-card-mt">${esc(t.sub)} · 납기 ${t.due.replace(/-/g,'.')}</div></div>
       <div style="display:flex;align-items:center;gap:5px">${sBadge(t.slot)}<span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div>
     </div>
-  </div>`).join('');
+    <div class="req-card-ft">
+      <button class="btn-quick-done${t.done?' done':''}" data-id="${t.id}" type="button" style="margin-left:auto;">${t.done?'미완료로 변경':'✓ 완료 처리'}</button>
+    </div>
+  </div>`).join(''));
+  bindDnTog(cEl);
+  cEl.querySelectorAll('.btn-quick-done').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      btn.disabled = true;
+      try { await toggleDone(+btn.dataset.id); } finally { btn.disabled = false; }
+    };
+  });
   cEl.querySelectorAll('.clickable').forEach(card => {
     card.onclick = () => {
       const t = tasks.find(x => x.id === +card.dataset.id);
@@ -992,9 +1053,14 @@ async function appR(id) {
     }
     const {data,error} = await sb.from('tasks').insert([{name:p.name,sub:p.sub,start_date:start,due:cdue,priority:p.priority,slot,done:false,description:p.desc||''}]).select();
     if(error){alert('승인 실패: '+error.message); return;}
-    await sb.from('pending').delete().eq('id',id);
+    const { error: delErr } = await sb.from('pending').delete().eq('id',id);
+    if(delErr){
+      // 확정 작업은 이미 생성됐는데 대기 목록에서만 못 지운 상태 — 데이터 유실은 아니지만 중복 표시될 수 있어 알려줌
+      alert('승인은 됐지만 대기 목록 정리에 실패했어요: '+delErr.message+'\n새로고침 후 대기 목록에 남아있으면 반려 처리해주세요.');
+    }
     tasks.push({id:data[0].id,name:p.name,sub:p.sub,start,due:cdue,priority:p.priority,slot,done:false,desc:p.desc||''});
-    pending.splice(pending.indexOf(p),1); updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); showT(p.name+' 승인됐어요!');
+    if(!delErr) pending.splice(pending.indexOf(p),1);
+    updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); showT(p.name+' 승인됐어요!');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
@@ -1006,24 +1072,36 @@ async function rejR(id) {
   const apBtn=document.querySelector(`.btn-ap[data-id="${id}"]`), rjBtn=document.querySelector(`.btn-rj[data-id="${id}"]`);
   if(apBtn) apBtn.disabled=true; if(rjBtn) rjBtn.disabled=true;
   try {
-    await sb.from('pending').delete().eq('id',id);
+    const { error } = await sb.from('pending').delete().eq('id',id);
+    if(error){ showT('반려 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     pending.splice(idx,1); updB(); renderRev(); showT(name+' 반려됐어요.');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
 }
-async function toggleDone(id) {
+async function toggleDone(id, opts) {
+  opts = opts || {};
   const t=tasks.find(x=>x.id===id); if(!t) return;
-  t.done=!t.done;
-  await sb.from('tasks').update({done:t.done}).eq('id',id);
+  const prev = t.done;
+  t.done = !t.done;
   renderRev(); renderG(); renderReqList(); renderRevSchedule();
-  showT(t.name+(t.done?' 완료됐어요!':' 미완료로 변경됐어요!'));
+  const { error } = await sb.from('tasks').update({done:t.done}).eq('id',id);
+  if(error){
+    t.done = prev; // 실패 시 되돌림
+    renderRev(); renderG(); renderReqList(); renderRevSchedule();
+    showT('처리 실패: '+error.message+' — 다시 시도해주세요.');
+    return;
+  }
+  if(!opts.silent){
+    showT(t.name+(t.done?' 완료 처리했어요!':' 미완료로 변경했어요!'), {undo: () => toggleDone(id)});
+  }
 }
 async function delTask(id) {
   if(!(await confirmDanger('삭제하면 되돌릴 수 없어요. 이 작업을 삭제할까요?', {title:'작업 삭제'}))) return false;
   const idx=tasks.findIndex(x=>x.id===id); if(idx<0) return false;
   const name=tasks[idx].name;
-  await sb.from('tasks').delete().eq('id',id);
+  const { error } = await sb.from('tasks').delete().eq('id',id);
+  if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return false; }
   tasks.splice(idx,1); renderRev(); renderG(); renderReqList(); renderRevSchedule();
   showT(name+' 삭제됐어요.');
   return true;
@@ -1042,7 +1120,8 @@ async function addP() {
   const btn=document.getElementById('btn-add-person');
   btn.disabled=true;
   try {
-    await sb.from('people').insert([{name:n}]);
+    const { error } = await sb.from('people').insert([{name:n}]);
+    if(error){ showT('추가 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     people.push(n); inp.value=''; renderP(); showT(n+' 추가됐어요!');
   } finally {
     btn.disabled=false;
@@ -1051,7 +1130,8 @@ async function addP() {
 async function rmP(i) {
   if(!(await confirmDanger(`"${people[i]}" 담당자를 삭제할까요?`, {title:'담당자 삭제'}))) return;
   const n=people[i];
-  await sb.from('people').delete().eq('name',n);
+  const { error } = await sb.from('people').delete().eq('name',n);
+  if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return; }
   people.splice(i,1); renderP(); showT(n+' 삭제됐어요.');
 }
 function renderO() {
@@ -1066,7 +1146,8 @@ async function addO() {
   const btn=document.getElementById('btn-add-off');
   btn.disabled=true;
   try {
-    await sb.from('off_days').insert([{date:d}]);
+    const { error } = await sb.from('off_days').insert([{date:d}]);
+    if(error){ showT('추가 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     offDays.push(d); inp.value=''; renderO(); renderG(); showT(d.replace(/-/g,'.')+' 추가됐어요!');
   } finally {
     btn.disabled=false;
@@ -1075,7 +1156,8 @@ async function addO() {
 async function rmO(i) {
   const d=offDays[i];
   if(!(await confirmDanger(`${d.replace(/-/g,'.')} 휴무일 지정을 삭제할까요?`, {title:'휴무일 삭제'}))) return;
-  await sb.from('off_days').delete().eq('date',d);
+  const { error } = await sb.from('off_days').delete().eq('date',d);
+  if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return; }
   offDays.splice(i,1); renderO(); renderG(); showT('삭제됐어요.');
 }
 function getWD(off) {
@@ -1117,11 +1199,18 @@ function renderG() {
         if(inR) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}"></div></div></td>`;
         return`<td class="dc${hc}"><div class="bw"></div></td>`;
       }).join('');
-      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div class="${t.isPend?'tn-p':'tn'}">${esc(t.name)}</div><div class="ts-s">${esc(t.sub)}</div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
+      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div style="display:flex;align-items:center;gap:6px;">${t.isPend?'':`<button class="gt-check${t.done?' done':''}" data-id="${t.id}" type="button" title="${t.done?'미완료로 변경':'완료 처리'}">${t.done?'✓':''}</button>`}<div><div class="${t.isPend?'tn-p':'tn'}">${esc(t.name)}</div><div class="ts-s">${esc(t.sub)}</div></div></div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
     }).join('');
 
   // 간트 행 클릭 이벤트
   setTimeout(() => {
+    document.querySelectorAll('#gb .gt-check').forEach(btn => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        btn.disabled = true;
+        try { await toggleDone(+btn.dataset.id); } finally { btn.disabled = false; }
+      };
+    });
     document.querySelectorAll('#gb tr.clickable').forEach(tr => {
       tr.onclick = () => {
         const id = +tr.dataset.id;
@@ -1167,10 +1256,54 @@ function renderG() {
   }, 50);
 }
 
+// ── 실시간 동기화 ──
+// 여러 사람이 동시에 요청을 제출·승인·완료 처리해도 새로고침 없이 서로 화면에 반영되도록,
+// Supabase Realtime(postgres_changes)을 구독해서 로컬 배열을 안전하게 병합함.
+// ⚠ Supabase 대시보드 > Database > Replication에서 아래 4개 테이블의 Realtime을 켜야 실제로 동작함.
+//    안 켜도 앱이 깨지진 않음 — 그냥 다른 사람 변경사항을 보려면 새로고침이 필요한, 지금까지의 동작 그대로임.
+function upsertLocal(arr, row, mapFn) {
+  const mapped = mapFn(row);
+  const idx = arr.findIndex(x => x.id === mapped.id);
+  if(idx >= 0) Object.assign(arr[idx], mapped);
+  else arr.push(mapped);
+}
+function removeLocalById(arr, id) {
+  const idx = arr.findIndex(x => x.id === id);
+  if(idx >= 0) arr.splice(idx,1);
+}
+function setupRealtime() {
+  const mapPending = r => ({id:r.id,name:r.name,sub:r.sub,type:r.type,due:r.due,priority:r.priority,desc:r.description,regAt:r.reg_at});
+  const mapTask = r => ({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done,desc:r.description||''});
+
+  sb.channel('rt-pending').on('postgres_changes', {event:'*', schema:'public', table:'pending'}, payload => {
+    if(payload.eventType==='DELETE') removeLocalById(pending, payload.old.id);
+    else upsertLocal(pending, payload.new, mapPending);
+    updB(); renderReqList(); renderRev(); renderG();
+  }).subscribe();
+
+  sb.channel('rt-tasks').on('postgres_changes', {event:'*', schema:'public', table:'tasks'}, payload => {
+    if(payload.eventType==='DELETE') removeLocalById(tasks, payload.old.id);
+    else upsertLocal(tasks, payload.new, mapTask);
+    renderReqList(); renderRev(); renderRevSchedule(); renderG();
+  }).subscribe();
+
+  sb.channel('rt-people').on('postgres_changes', {event:'*', schema:'public', table:'people'}, payload => {
+    if(payload.eventType==='DELETE') { const idx=people.indexOf(payload.old.name); if(idx>=0) people.splice(idx,1); }
+    else if(!people.includes(payload.new.name)) people.push(payload.new.name);
+    renderP();
+  }).subscribe();
+
+  sb.channel('rt-off_days').on('postgres_changes', {event:'*', schema:'public', table:'off_days'}, payload => {
+    if(payload.eventType==='DELETE') { const idx=offDays.indexOf(payload.old.date); if(idx>=0) offDays.splice(idx,1); }
+    else if(!offDays.includes(payload.new.date)) offDays.push(payload.new.date);
+    renderO(); renderG();
+  }).subscribe();
+}
+
 // ── 초기 로드 ──
 checkSession();
 syncHolidaysFromAPI().then(() => { renderG(); }); // 최신 공휴일 반영되면 스케줄 다시 그림
-loadAll().then(() => { renderG(); });
+loadAll().then(() => { renderG(); setupRealtime(); });
 </script>
 </body>
 </html>
