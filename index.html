@@ -62,6 +62,7 @@
               <div id="due-body"></div>
               <div class="due-note" id="due-note"></div>
             </div>
+            <div class="due-suggest" id="due-suggest"></div>
           </div>
           <div class="fld ff">
             <span class="lbl">작업 유형<span class="req">*</span></span>
@@ -128,6 +129,7 @@
         <div class="leg"><div class="leg-dot" style="background:var(--surface-1);border:1px dashed var(--border-stronger)"></div><span style="opacity:.6">검토 대기</span></div>
         <div class="leg-div"></div>
         <div class="leg"><div class="leg-dot" style="background:#fff0ee;border:1px solid #F5C4B3"></div>공휴일</div>
+        <div class="leg"><div class="leg-dot" style="background:#fff3e0;border:1px solid #F5A524"></div>⚠ 급건 캐파 초과(조율 필요)</div>
       </div>
       <div class="gt-wrap"><table class="gt"><thead id="gh"></thead><tbody id="gb"></tbody></table></div>
     </div>
@@ -205,6 +207,7 @@
     <div class="page" id="page-review">
       <div class="pg-hd"><div class="pg-title">검토 · 확정</div><div class="pg-sub">대기 중인 요청을 승인하고 전체 작업 목록을 관리해요</div></div>
       <div class="abbg-banner"><i class="ti ti-shield-check"></i>ABBG 전용 — 인증된 팀원만 접근할 수 있어요</div>
+      <div id="rev-capacity"></div>
       <div class="sec-lbl">이번 주 · 다음 주 스케줄</div>
       <div id="rev-schedule"></div>
       <div class="sec-lbl" style="margin-top:14px">확인 필요 — 검토 대기 중</div>
@@ -334,6 +337,36 @@ const TI = {
   edit:{name:'수정/보완',days:'당일~1일',minDays:0,ex:['텍스트 수정','이미지 교체','사이즈 변경','색상 조정'],note:'원본 파일 드라이브 경로도 알려주시면 빠르게 처리돼요.'},
   etc:{name:'기타',days:'확인 후 안내',minDays:2,ex:['번역 편집','영문 버전','일본어 현지화'],note:'내용 상세히 적어주시면 일정 확인 후 회신드려요.'}
 };
+// ── 급건(우선순위:긴급) 캐파 기준 ──
+// 이미지·문안수정/색감보정(edit), 인쇄용 파일 전달(print), 레퍼런스 확실한 간단 썸네일(sns)류는
+// 하루 최대 3건까지는 급건으로 소화 가능하다고 보고, 4건째부터 일정 조율 필요로 표시함.
+// 그 외 유형(상세페이지·배너·패키지·기타)은 손이 많이 가는 작업으로 보고 급건 1건만 겹쳐도 조율 필요로 표시함.
+// (정확한 기준은 운영하면서 CAP_FRIENDLY_MAX / CAP_STRICT_MAX 숫자만 조정하면 돼요.)
+const CAP_FRIENDLY_TYPES = ['edit','print','sns'];
+const CAP_FRIENDLY_MAX = 3;
+const CAP_STRICT_MAX = 1;
+function capFor(type){ return CAP_FRIENDLY_TYPES.includes(type) ? CAP_FRIENDLY_MAX : CAP_STRICT_MAX; }
+// 특정 날짜에 이미 잡혀있는 '급건' 목록 — 그 날 마감이거나 그 날짜에 걸쳐 진행 중인 확정 작업 +
+// 아직 검토 대기 중이지만 같은 날짜를 원하는 급건 요청까지 포함(승인되면 그대로 부하가 되므로)
+function urgentItemsOn(dateStr, excludeId) {
+  const conf = tasks.filter(t=>!t.done && t.priority==='urgent' && t.id!==excludeId &&
+    (t.due===dateStr || (t.start && t.start<=dateStr && t.due>dateStr)))
+    .map(t=>({name:t.name, sub:t.sub, due:t.due}));
+  const wait = pending.filter(p=>p.priority==='urgent' && p.due===dateStr && p.id!==excludeId)
+    .map(p=>({name:p.name, sub:p.sub, due:p.due}));
+  return conf.concat(wait);
+}
+// 캐파 내에서 가장 빠른 대체일 추천 (최대 30일 탐색, 못 찾으면 null)
+function suggestDate(dateStr, type, excludeId) {
+  let d = new Date(dateStr+'T00:00:00');
+  const cap = capFor(type);
+  for(let i=0;i<30;i++){
+    d.setDate(d.getDate()+1);
+    const s = fmt(d);
+    if(!isO(s) && urgentItemsOn(s, excludeId).length < cap) return s;
+  }
+  return null;
+}
 const DN = ['월','화','수','목','금'];
 const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',settings:'설정',lock:'ABBG 전용'};
 const TABS = ['form','requests','schedule','people','tutorial','review','settings','lock'];
@@ -484,7 +517,7 @@ function sw(tab) {
     const m=document.getElementById('mtab-'+t); if(m) m.classList.toggle('active',t===tab);
   });
   const mpg=document.getElementById('mpg'); if(mpg) mpg.textContent=PAGES[tab]||'';
-  if(tab==='review') { renderRev(); renderRevSchedule(); }
+  if(tab==='review') { renderRev(); renderRevSchedule(); renderCapacityAlerts(); }
   if(tab==='requests') renderReqList();
   if(tab==='schedule') renderG();
   if(tab==='people') {renderP(); renderO();}
@@ -506,7 +539,7 @@ document.getElementById('nav-review').onclick = () => swA('review');
 document.getElementById('nav-settings').onclick = () => swA('settings');
 document.getElementById('go-people').onclick = () => sw('people');
 document.getElementById('req-due').onchange = () => {onDue(); runC();};
-document.getElementById('req-type').onchange = () => {onType(); runC();};
+document.getElementById('req-type').onchange = () => {onType(); onDue(); runC();};
 document.getElementById('req-title').oninput = runC;
 document.getElementById('req-desc').oninput = runC;
 document.getElementById('req-person').onchange = runC;
@@ -679,7 +712,7 @@ function showPendingModal(p) {
       const { error } = await sb.from('pending').delete().eq('id',p.id);
       if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
       pending.splice(pending.indexOf(p),1);
-      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); showT('요청이 취소됐어요.');
+      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); renderCapacityAlerts(); showT('요청이 취소됐어요.');
     } finally {
       cancelBtn.disabled = false;
     }
@@ -741,7 +774,7 @@ function showTaskModal(t) {
     tasks.splice(tasks.indexOf(t), 1);
     pending.push({id:data[0].id, name:t.name, sub:t.sub, type:'etc',
       due:t.due, priority:t.priority, desc:t.desc||'', regAt:TODAY});
-    updB(); renderRev(); renderG(); renderReqList(); renderRevSchedule();
+    updB(); renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
     closeModal();
     sw('form');
     setTimeout(()=>{
@@ -817,13 +850,15 @@ async function chPw() {
 function onDue() {
   const due=document.getElementById('req-due').value;
   const panel=document.getElementById('due-panel');
-  if(!due){panel.classList.remove('show'); return;}
+  const sug=document.getElementById('due-suggest');
+  if(!due){panel.classList.remove('show'); sug.classList.remove('show'); sug.innerHTML=''; return;}
   const ph=document.getElementById('due-ph'), lbl=document.getElementById('due-lbl'), cnt=document.getElementById('due-cnt'), note=document.getElementById('due-note'), body=document.getElementById('due-body');
   if(isO(due)||isPast(due)){
     ph.className='due-ph ph-hol'; lbl.textContent=isPast(due)?'과거 날짜는 선택할 수 없어요':`작업 불가일 — ${isH(due)?HOL[due]:'주말/휴무'}`;
     // 과거 날짜를 골랐을 땐 그 날짜 기준이 아니라 '오늘' 기준으로 가장 빠른 영업일을 안내해야 함
     const suggest = isPast(due) ? (isO(TODAY)?nWD(TODAY):TODAY) : nWD(due);
-    cnt.textContent='선택 불가'; body.innerHTML=''; note.textContent='다음 영업일 '+suggest.replace(/-/g,'.')+'으로 변경해주세요.'; panel.classList.add('show'); return;
+    cnt.textContent='선택 불가'; body.innerHTML=''; note.textContent='다음 영업일 '+suggest.replace(/-/g,'.')+'으로 변경해주세요.'; panel.classList.add('show');
+    sug.classList.remove('show'); sug.innerHTML=''; return;
   }
   const tmr=nWD(due), dDay=tasks.filter(t=>!t.done&&t.due===due), wip=tasks.filter(t=>!t.done&&t.start<=due&&t.due>due), next=tasks.filter(t=>!t.done&&t.due===tmr);
   const total=dDay.length+wip.length+next.length, level=total===0?'free':total>=5?'full':'busy';
@@ -836,6 +871,25 @@ function onDue() {
   body.innerHTML=html;
   note.textContent=total===0?'이 날은 여유로워요.':level==='full'?`총 ${total}건 진행 중. 납기 조정을 검토해주세요.`:`총 ${total}건 진행 중. ABBG 확인 후 조율할 수 있어요.`;
   panel.classList.add('show');
+
+  // 급건 캐파 기준 추천 마감일 (작업 유형을 골라야 정확히 계산돼요)
+  const type = document.getElementById('req-type').value;
+  if(type){
+    const items = urgentItemsOn(due);
+    const cap = capFor(type);
+    const projected = items.length + (fPri==='urgent'?1:0);
+    if(projected > cap){
+      const alt = suggestDate(due, type);
+      sug.innerHTML = `⚠️ <b>${due.replace(/-/g,'.')}</b>은 이미 급건 ${items.length}건이 예정돼 있어 이 작업 유형(${TI[type]?.name||type}) 기준 캐파(하루 ${cap}건)를 넘을 수 있어요.`
+        + (alt?` 추천 마감일: <b>${alt.replace(/-/g,'.')}</b>`:' 30일 내 여유 있는 날을 찾지 못했어요 — ABBG에 직접 문의해주세요.')
+        + `<span class="ds-disclaimer">* 어디까지나 참고용 추천일 뿐이며, 실제 확정은 ABBG 확인이 필요해요.</span>`;
+      sug.classList.add('show');
+    } else {
+      sug.classList.remove('show'); sug.innerHTML='';
+    }
+  } else {
+    sug.classList.remove('show'); sug.innerHTML='';
+  }
 }
 function onType() {
   const val=document.getElementById('req-type').value; const h=document.getElementById('type-hint');
@@ -846,7 +900,7 @@ function onType() {
   document.getElementById('h-note').textContent='※ '+i.note; h.classList.add('show');
 }
 function setPri(p) {
-  fPri=p; ['urgent','normal','low'].forEach(k=>document.getElementById('p-'+k).className='pbtn'+(p===k?' sel-'+k:'')); runC();
+  fPri=p; ['urgent','normal','low'].forEach(k=>document.getElementById('p-'+k).className='pbtn'+(p===k?' sel-'+k:'')); onDue(); runC();
 }
 function runC() {
   const due=document.getElementById('req-due').value, type=document.getElementById('req-type').value, desc=document.getElementById('req-desc').value.trim();
@@ -855,6 +909,13 @@ function runC() {
   if(due&&isO(due)&&!isPast(due)) checks.push({ic:'🚫',m:`선택한 날짜는 공휴일/휴무일이에요`,s:'다음 영업일 '+nWD(due).replace(/-/g,'.')+'으로 변경해주세요.'});
   if(due&&type&&TI[type]&&!isPast(due)&&!isO(due)){const days=wdB(TODAY,due),min=TI[type].minDays; if(days<min) checks.push({ic:'⏰',m:`납기까지 영업일이 ${days}일뿐이에요 (최소 ${min}일 필요)`,s:'ABBG 확인 후 가능 여부를 안내드릴게요.'});}
   if(due&&!isO(due)&&!isPast(due)){const dDay=tasks.filter(t=>!t.done&&t.due===due); if(dDay.length>=3) checks.push({ic:'📦',m:`${due.replace(/-/g,'.')} 이미 마감 예정 ${dDay.length}건이에요`,s:'납기 조정을 권장해요.'});}
+  if(due&&type&&!isPast(due)&&!isO(due)){
+    const items=urgentItemsOn(due), cap=capFor(type), projected=items.length+(fPri==='urgent'?1:0);
+    if(projected>cap){
+      const names=items.map(x=>`${x.name}(${x.sub})`).join(', ')||'—';
+      checks.push({ic:'⚠️',m:`${due.replace(/-/g,'.')} 급건 캐파(하루 ${cap}건)를 넘을 수 있어요`,s:`이미 예정된 급건: ${names} · 등록 후 ABBG와 일정 조율이 필요할 수 있어요.`});
+    }
+  }
   if(due&&type&&type!=='edit'){const hasRef=desc.includes('http')||desc.includes('W:\\')||desc.includes('works.do')||desc.length>15; if(!hasRef) checks.push({ic:'📂',m:'드라이브 경로나 링크가 없어요',s:'자료 없이는 착수가 불가해요.'});}
   if(fPri==='urgent'&&due&&wdB(TODAY,due)<=1) checks.push({ic:'🚨',m:'급건인데 납기가 내일이에요',s:'ABBG에 먼저 카톡으로 확인해주세요.'});
   const panel=document.getElementById('check-panel');
@@ -882,6 +943,8 @@ async function submitReq() {
   updB(); showT('요청 등록됐어요! ABBG 검토 후 확정돼요.');
   ['req-person','req-type','req-title','req-due','req-desc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('type-hint').classList.remove('show'); document.getElementById('due-panel').classList.remove('show'); document.getElementById('check-panel').classList.remove('show');
+  document.getElementById('due-suggest').classList.remove('show'); document.getElementById('due-suggest').innerHTML='';
+  renderCapacityAlerts();
   fPri=''; ['urgent','normal','low'].forEach(k=>document.getElementById('p-'+k).className='pbtn');
 }
 function updB() {
@@ -895,6 +958,61 @@ function updB() {
     if(mb) mb.classList.remove('show');
   }
 }
+// ── 클립보드 복사 (카톡 붙여넣기용) ──
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); showT('복사됐어요! 카톡에 붙여넣기 해주세요.'); }
+  catch(e) { showT('복사에 실패했어요 — 직접 선택해서 복사해주세요.'); }
+  document.body.removeChild(ta);
+}
+function copyText(text) {
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(()=>showT('복사됐어요! 카톡에 붙여넣기 해주세요.')).catch(()=>fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+// ── 검토·확정 페이지 — 급건 캐파 초과(일정 조율 필요) 안내 ──
+// 오늘부터 2주간, 유형과 무관하게 급건이 CAP_FRIENDLY_MAX(하루 3건)를 넘는 날짜를 찾아 안내하고,
+// 그레인온에 바로 카톡으로 보낼 수 있는 문구를 복사할 수 있게 함
+function renderCapacityAlerts() {
+  const el = document.getElementById('rev-capacity');
+  if(!el) return;
+  const alerts = [];
+  let d = new Date(TODAY+'T00:00:00');
+  for(let i=0;i<14;i++){
+    const s = fmt(d);
+    if(!isO(s)){
+      const items = urgentItemsOn(s);
+      if(items.length >= CAP_FRIENDLY_MAX) alerts.push({date:s, items});
+    }
+    d.setDate(d.getDate()+1);
+  }
+  if(!alerts.length){ el.innerHTML=''; return; }
+  el.innerHTML = `<div class="sec-lbl" style="margin-top:0">⚠ 일정 조율이 필요해요</div>` + alerts.map(a=>{
+    const dateLbl = a.date.replace(/-/g,'.');
+    const namesHtml = a.items.map(x=>`<div>· ${esc(x.name)} <span style="color:var(--text-muted)">(${esc(x.sub)})</span></div>`).join('');
+    return `<div class="cap-alert-card">
+      <div class="cap-alert-hd"><span class="cap-alert-date">${dateLbl}</span><span class="cap-alert-cnt">급건 ${a.items.length}건</span></div>
+      <div class="cap-alert-list">${namesHtml}</div>
+      <button class="btn-copy-kakao" data-date="${a.date}" type="button">💬 카톡으로 복사</button>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.btn-copy-kakao').forEach(btn=>{
+    btn.onclick = () => {
+      const a = alerts.find(x=>x.date===btn.dataset.date);
+      if(!a) return;
+      const dateLbl = a.date.replace(/-/g,'.');
+      const lines = a.items.map(x=>`- ${x.name} (${x.sub})`).join('\n');
+      const msg = `안녕하세요! ${dateLbl} 예정된 급건이 총 ${a.items.length}건으로 캐파를 넘을 것 같아요.\n\n${lines}\n\n우선순위 전달주시면 반영해서 진행하겠습니다 :)`;
+      copyText(msg);
+    };
+  });
+}
+
 function renderRevSchedule() {
   const el = document.getElementById('rev-schedule');
   if(!el) return;
@@ -926,10 +1044,11 @@ function renderRevSchedule() {
     const off = isO(ds2);
     const isT = ds2 === todayStr;
     const isNextW = i >= 5;
-    html += `<th class="dc${off?' hol':isT?' today-col':''}" style="width:52px;">
+    const overload = !off && urgentItemsOn(ds2).length >= CAP_FRIENDLY_MAX;
+    html += `<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" style="width:52px;" title="${overload?'급건 캐파 초과 — 일정 조율 필요':''}">
       <span class="dn" style="font-size:9px;${isNextW?'color:var(--text-muted)':''}">${d.getDate()}</span>
       <span class="dname" style="font-size:8px;">${DN2[i%5]}</span>
-      ${off?`<span class="hol-nm" style="font-size:8px;">${gOL(ds2)}</span>`:''}
+      ${off?`<span class="hol-nm" style="font-size:8px;">${gOL(ds2)}</span>`:overload?`<span class="overload-nm" style="font-size:8px;">⚠조율필요</span>`:''}
     </th>`;
   });
   html += '</tr></thead><tbody>';
@@ -955,9 +1074,10 @@ function renderRevSchedule() {
         else if(inR) cells += `<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}" style="height:14px;"></div></div></td>`;
         else cells += `<td class="dc${hc}"><div class="bw"></div></td>`;
       });
+      const dayOverload = t.priority==='urgent' && !t.done && urgentItemsOn(t.due).length >= CAP_FRIENDLY_MAX;
       html += `<tr>
         <td class="tnc" style="padding:0 6px;">
-          <div class="tn" style="font-size:10px;">${esc(t.name)}</div>
+          <div class="tn" style="font-size:10px;">${dayOverload?'⚠ ':''}${esc(t.name)}</div>
           <div class="ts-s" style="font-size:9px;">${esc(t.sub)}</div>
         </td>
         <td style="width:50px;padding:0 4px;">${sBadge(t.slot)}</td>
@@ -1082,7 +1202,7 @@ async function appR(id) {
     }
     tasks.push({id:data[0].id,name:p.name,sub:p.sub,start,due:cdue,priority:p.priority,slot,done:false,desc:p.desc||''});
     if(!delErr) pending.splice(pending.indexOf(p),1);
-    updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); showT(p.name+' 승인됐어요!');
+    updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); renderCapacityAlerts(); showT(p.name+' 승인됐어요!');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
@@ -1096,7 +1216,7 @@ async function rejR(id) {
   try {
     const { error } = await sb.from('pending').delete().eq('id',id);
     if(error){ showT('반려 실패: '+error.message+' — 다시 시도해주세요.'); return; }
-    pending.splice(idx,1); updB(); renderRev(); showT(name+' 반려됐어요.');
+    pending.splice(idx,1); updB(); renderRev(); renderCapacityAlerts(); showT(name+' 반려됐어요.');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
@@ -1106,11 +1226,11 @@ async function toggleDone(id, opts) {
   const t=tasks.find(x=>x.id===id); if(!t) return;
   const prev = t.done;
   t.done = !t.done;
-  renderRev(); renderG(); renderReqList(); renderRevSchedule();
+  renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
   const { error } = await sb.from('tasks').update({done:t.done}).eq('id',id);
   if(error){
     t.done = prev; // 실패 시 되돌림
-    renderRev(); renderG(); renderReqList(); renderRevSchedule();
+    renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
     showT('처리 실패: '+error.message+' — 다시 시도해주세요.');
     return;
   }
@@ -1124,7 +1244,7 @@ async function delTask(id) {
   const name=tasks[idx].name;
   const { error } = await sb.from('tasks').delete().eq('id',id);
   if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return false; }
-  tasks.splice(idx,1); renderRev(); renderG(); renderReqList(); renderRevSchedule();
+  tasks.splice(idx,1); renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
   showT(name+' 삭제됐어요.');
   return true;
 }
@@ -1198,8 +1318,8 @@ function renderG() {
   const days=getWD(wkOff); const ts=TODAY;
   document.getElementById('wk-lbl').textContent=`${days[0].getMonth()+1}/${days[0].getDate()} – ${days[4].getMonth()+1}/${days[4].getDate()}`;
   document.getElementById('gh').innerHTML='<tr><th style="min-width:100px">작업명</th><th style="width:64px">구좌</th>'+
-    days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off;
-      return`<th class="dc${off?' hol':isT?' today-col':''}"><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${gOL(ds)}</span>`:''}</th>`;
+    days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off; const overload=!off&&urgentItemsOn(ds).length>=CAP_FRIENDLY_MAX;
+      return`<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" title="${overload?'급건 캐파 초과 — 일정 조율 필요':''}"><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${gOL(ds)}</span>`:overload?`<span class="overload-nm">⚠조율필요</span>`:''}</th>`;
     }).join('')+'</tr>';
   const ds=days.map(fmt);
   const weekStart=ds[0], weekEnd=ds[ds.length-1];
@@ -1221,7 +1341,8 @@ function renderG() {
         if(inR) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}"></div></div></td>`;
         return`<td class="dc${hc}"><div class="bw"></div></td>`;
       }).join('');
-      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div style="display:flex;align-items:center;gap:6px;">${t.isPend?'':`<button class="gt-check${t.done?' done':''}" data-id="${t.id}" type="button" title="${t.done?'미완료로 변경':'완료 처리'}">${t.done?'✓':''}</button>`}<div><div class="${t.isPend?'tn-p':'tn'}">${esc(t.name)}</div><div class="ts-s">${esc(t.sub)}</div></div></div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
+      const dayOverload = t.priority==='urgent' && !t.done && urgentItemsOn(t.due).length>=CAP_FRIENDLY_MAX;
+      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div style="display:flex;align-items:center;gap:6px;">${t.isPend?'':`<button class="gt-check${t.done?' done':''}" data-id="${t.id}" type="button" title="${t.done?'미완료로 변경':'완료 처리'}">${t.done?'✓':''}</button>`}<div><div class="${t.isPend?'tn-p':'tn'}">${dayOverload?'⚠ ':''}${esc(t.name)}</div><div class="ts-s">${esc(t.sub)}</div></div></div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
     }).join('');
 
   // 간트 행 클릭 이벤트
@@ -1273,13 +1394,13 @@ function setupRealtime() {
   sb.channel('rt-pending').on('postgres_changes', {event:'*', schema:'public', table:'pending'}, payload => {
     if(payload.eventType==='DELETE') removeLocalById(pending, payload.old.id);
     else upsertLocal(pending, payload.new, mapPending);
-    updB(); renderReqList(); renderRev(); renderG();
+    updB(); renderReqList(); renderRev(); renderG(); renderCapacityAlerts();
   }).subscribe();
 
   sb.channel('rt-tasks').on('postgres_changes', {event:'*', schema:'public', table:'tasks'}, payload => {
     if(payload.eventType==='DELETE') removeLocalById(tasks, payload.old.id);
     else upsertLocal(tasks, payload.new, mapTask);
-    renderReqList(); renderRev(); renderRevSchedule(); renderG();
+    renderReqList(); renderRev(); renderRevSchedule(); renderG(); renderCapacityAlerts();
   }).subscribe();
 
   sb.channel('rt-people').on('postgres_changes', {event:'*', schema:'public', table:'people'}, payload => {
@@ -1298,7 +1419,7 @@ function setupRealtime() {
 // ── 초기 로드 ──
 checkSession();
 syncHolidaysFromAPI().then(() => { renderG(); }); // 최신 공휴일 반영되면 스케줄 다시 그림
-loadAll().then(() => { renderG(); setupRealtime(); });
+loadAll().then(() => { renderG(); renderCapacityAlerts(); setupRealtime(); });
 </script>
 </body>
 </html>
