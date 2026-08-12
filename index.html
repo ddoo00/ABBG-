@@ -334,7 +334,6 @@ const TI = {
   edit:{name:'수정/보완',days:'당일~1일',minDays:0,ex:['텍스트 수정','이미지 교체','사이즈 변경','색상 조정'],note:'원본 파일 드라이브 경로도 알려주시면 빠르게 처리돼요.'},
   etc:{name:'기타',days:'확인 후 안내',minDays:2,ex:['번역 편집','영문 버전','일본어 현지화'],note:'내용 상세히 적어주시면 일정 확인 후 회신드려요.'}
 };
-const DM = {detail:3,banner:2,package:2,sns:1,print:2,edit:1,etc:2};
 const DN = ['월','화','수','목','금'];
 const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',settings:'설정',lock:'ABBG 전용'};
 const TABS = ['form','requests','schedule','people','tutorial','review','settings','lock'];
@@ -369,6 +368,7 @@ const gOL = s => HOL[s]||(offDays.includes(s)?'회사 휴무':'');
 const nWD = s => {const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+1);while(isO(fmt(d)))d.setDate(d.getDate()+1);return fmt(d);};
 const wdB = (a,b) => {let c=0,d=new Date(a+'T00:00:00');const e=new Date(b+'T00:00:00');while(d<e){if(!isO(fmt(d)))c++;d.setDate(d.getDate()+1);}return c;};
 const sBadge = s => s==='1'?`<span class="sb1"><span class="d1"></span>1</span>`:s==='2'?`<span class="sb2"><span class="d2"></span>2</span>`:`<span class="sb-etc">${s||'-'}</span>`;
+const priBadge = p => p==='urgent'?`<span class="bpri b-urg">급건</span>`:p==='low'?`<span class="bpri b-low">여유</span>`:`<span class="bpri b-nrm">일반</span>`;
 let __toastTimer = null;
 const showT = (msg, opts) => {
   opts = opts || {};
@@ -566,7 +566,7 @@ function renderReqList() {
           </div>
           <div style="display:flex;align-items:center;gap:5px">
             <span class="req-status pend-status">검토 대기</span>
-            <span class="bpri ${p.priority==='urgent'?'b-urg':'b-nrm'}">${p.priority==='urgent'?'급건':'일반'}</span>
+            ${priBadge(p.priority)}
           </div>
         </div>
       </div>`).join('');
@@ -586,7 +586,7 @@ function renderReqList() {
           <div style="display:flex;align-items:center;gap:5px">
             ${sBadge(t.slot)}
             <span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span>
-            <span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span>
+            ${priBadge(t.priority)}
           </div>
         </div>
       </div>`).join('');
@@ -615,50 +615,7 @@ function renderReqList() {
       if(isPend) {
         const p = pending.find(x=>x.id===id);
         if(!p) return;
-        const ti = TI[p.type]||{};
-        hideTaskModalActions();
-        document.getElementById('modal-title').textContent = p.name;
-        document.getElementById('modal-bd').innerHTML = `
-          <div class="modal-row">
-            <div class="modal-field"><div class="modal-fl">요청자</div><div class="modal-fv">${esc(p.sub)}</div></div>
-            <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status pend-status">검토 대기</span></div></div>
-            <div class="modal-field"><div class="modal-fl">작업 유형</div><div class="modal-fv">${ti.name||p.type}${ti.days?' ('+ti.days+')':''}</div></div>
-            <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
-            <div class="modal-field modal-ff"><div class="modal-fl">요청 내용</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.5">${esc(p.desc)||'—'}</div></div>
-          </div>
-          <div style="display:flex;gap:6px;margin-top:4px;">
-            <button class="btn-modal-cancel" style="padding:5px 12px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:11px;font-weight:600;color:var(--c2d);cursor:pointer;border-color:var(--c2m);">요청 취소</button>
-          </div>`;
-        const editBtn = document.getElementById('modal-edit');
-        editBtn.style.display='inline-flex';
-        editBtn.textContent='수정';
-        editBtn.onclick = () => {
-          closeModal();
-          sw('form');
-          setTimeout(()=>{
-            document.getElementById('req-person').value=p.sub;
-            document.getElementById('req-type').value=p.type;
-            document.getElementById('req-title').value=p.name;
-            document.getElementById('req-due').value=p.due;
-            document.getElementById('req-desc').value=p.desc||'';
-            setPri(p.priority); onDue(); onType(); runC();
-            rejSilent(p.id);
-          },100);
-        };
-        const cancelBtn = document.querySelector('.btn-modal-cancel');
-        cancelBtn.onclick = async () => {
-          if(!(await confirmDanger(`"${p.name}" 요청을 취소할까요?`, {title:'요청 취소', okLabel:'취소하기'}))) return;
-          cancelBtn.disabled = true;
-          try {
-            const { error } = await sb.from('pending').delete().eq('id',p.id);
-            if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
-            pending.splice(pending.indexOf(p),1);
-            updB(); closeModal(); renderReqList(); showT('요청이 취소됐어요.');
-          } finally {
-            cancelBtn.disabled = false;
-          }
-        };
-        document.getElementById('modal-bg').classList.add('show');
+        showPendingModal(p);
       } else {
         const t = tasks.find(x=>x.id===id);
         if(!t) return;
@@ -682,6 +639,53 @@ function hideTaskModalActions() {
   document.getElementById('modal-done').style.display='none';
   document.getElementById('modal-delete').style.display='none';
 }
+// ── 검토 대기 중(pending) 요청 상세 모달 (요청 현황 · 스케줄 공용) ──
+function showPendingModal(p) {
+  const ti = TI[p.type]||{};
+  hideTaskModalActions();
+  document.getElementById('modal-title').textContent = p.name;
+  document.getElementById('modal-bd').innerHTML = `
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-fl">요청자</div><div class="modal-fv">${esc(p.sub)}</div></div>
+      <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status pend-status">검토 대기</span></div></div>
+      <div class="modal-field"><div class="modal-fl">작업 유형</div><div class="modal-fv">${ti.name||p.type}${ti.days?' ('+ti.days+')':''}</div></div>
+      <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
+      <div class="modal-field modal-ff"><div class="modal-fl">요청 내용</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.5">${esc(p.desc)||'—'}</div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:4px;">
+      <button class="btn-modal-cancel" style="padding:5px 12px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:6px;font-size:11px;font-weight:600;color:var(--c2d);cursor:pointer;border-color:var(--c2m);">요청 취소</button>
+    </div>`;
+  const editBtn = document.getElementById('modal-edit');
+  editBtn.style.display='inline-flex';
+  editBtn.textContent='수정';
+  editBtn.onclick = () => {
+    closeModal();
+    sw('form');
+    setTimeout(()=>{
+      document.getElementById('req-person').value=p.sub;
+      document.getElementById('req-type').value=p.type;
+      document.getElementById('req-title').value=p.name;
+      document.getElementById('req-due').value=p.due;
+      document.getElementById('req-desc').value=p.desc||'';
+      setPri(p.priority); onDue(); onType(); runC();
+      rejSilent(p.id);
+    },100);
+  };
+  const cancelBtn = document.querySelector('.btn-modal-cancel');
+  cancelBtn.onclick = async () => {
+    if(!(await confirmDanger(`"${p.name}" 요청을 취소할까요?`, {title:'요청 취소', okLabel:'취소하기'}))) return;
+    cancelBtn.disabled = true;
+    try {
+      const { error } = await sb.from('pending').delete().eq('id',p.id);
+      if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
+      pending.splice(pending.indexOf(p),1);
+      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); showT('요청이 취소됐어요.');
+    } finally {
+      cancelBtn.disabled = false;
+    }
+  };
+  document.getElementById('modal-bg').classList.add('show');
+}
 function showTaskModal(t) {
   document.getElementById('modal-title').textContent = t.name;
   document.getElementById('modal-bd').innerHTML = `
@@ -691,7 +695,7 @@ function showTaskModal(t) {
       <div class="modal-field"><div class="modal-fl">구좌</div><div class="modal-fv">${sBadge(t.slot)}</div></div>
       <div class="modal-field"><div class="modal-fl">납기일</div><div class="modal-fv">${t.due.replace(/-/g,'.')}</div></div>
       <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
-      <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div></div>
+      <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv">${priBadge(t.priority)}</div></div>
       ${t.desc?`<div class="modal-field modal-ff"><div class="modal-fl">요청 내용 · 드라이브</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.6">${esc(t.desc)}</div></div>`:''}
     </div>`;
   document.getElementById('modal-warn').style.display='block';
@@ -757,9 +761,20 @@ function showTaskModal(t) {
 async function checkSession() {
   const { data } = await sb.auth.getSession();
   unlocked = !!data?.session;
+  // 세션 확인이 늦게 끝나는 사이 사용자가 먼저 검토·확정/설정을 눌러 잠금 화면이 떠 있었다면,
+  // 이미 로그인된 상태이므로 잠금 화면에 머물지 말고 바로 원래 화면으로 보내줌
+  if(unlocked && document.getElementById('page-lock')?.classList.contains('active')) {
+    sw(pTarget||'review');
+  }
 }
 // 다른 탭/창에서 로그인·로그아웃해도 상태를 맞춰줌
-sb.auth.onAuthStateChange((_event, session) => { unlocked = !!session; });
+sb.auth.onAuthStateChange((_event, session) => {
+  const wasUnlocked = unlocked;
+  unlocked = !!session;
+  if(unlocked && !wasUnlocked && document.getElementById('page-lock')?.classList.contains('active')) {
+    sw(pTarget||'review');
+  }
+});
 
 async function tryU() {
   const pw = document.getElementById('lock-pw').value;
@@ -806,7 +821,9 @@ function onDue() {
   const ph=document.getElementById('due-ph'), lbl=document.getElementById('due-lbl'), cnt=document.getElementById('due-cnt'), note=document.getElementById('due-note'), body=document.getElementById('due-body');
   if(isO(due)||isPast(due)){
     ph.className='due-ph ph-hol'; lbl.textContent=isPast(due)?'과거 날짜는 선택할 수 없어요':`작업 불가일 — ${isH(due)?HOL[due]:'주말/휴무'}`;
-    cnt.textContent='선택 불가'; body.innerHTML=''; note.textContent='다음 영업일 '+nWD(due).replace(/-/g,'.')+'으로 변경해주세요.'; panel.classList.add('show'); return;
+    // 과거 날짜를 골랐을 땐 그 날짜 기준이 아니라 '오늘' 기준으로 가장 빠른 영업일을 안내해야 함
+    const suggest = isPast(due) ? (isO(TODAY)?nWD(TODAY):TODAY) : nWD(due);
+    cnt.textContent='선택 불가'; body.innerHTML=''; note.textContent='다음 영업일 '+suggest.replace(/-/g,'.')+'으로 변경해주세요.'; panel.classList.add('show'); return;
   }
   const tmr=nWD(due), dDay=tasks.filter(t=>!t.done&&t.due===due), wip=tasks.filter(t=>!t.done&&t.start<=due&&t.due>due), next=tasks.filter(t=>!t.done&&t.due===tmr);
   const total=dDay.length+wip.length+next.length, level=total===0?'free':total>=5?'full':'busy';
@@ -858,10 +875,10 @@ async function submitReq() {
     if(days<TI[type].minDays && !confirm(`납기까지 영업일이 ${days}일뿐이에요.\n최소 ${TI[type].minDays}일이 필요해요. 그래도 등록할까요?`)) return;
   }
   const btn=document.getElementById('submit-btn'); btn.disabled=true;
-  const {data,error} = await sb.from('pending').insert([{name:title,sub:person,type,due,priority:fPri==='low'?'normal':fPri,description:desc,reg_at:TODAY}]).select();
+  const {data,error} = await sb.from('pending').insert([{name:title,sub:person,type,due,priority:fPri,description:desc,reg_at:TODAY}]).select();
   btn.disabled=false;
   if(error){alert('등록 실패: '+error.message); return;}
-  pending.push({id:data[0].id,name:title,sub:person,type,due,priority:fPri==='low'?'normal':fPri,desc,regAt:TODAY});
+  pending.push({id:data[0].id,name:title,sub:person,type,due,priority:fPri,desc,regAt:TODAY});
   updB(); showT('요청 등록됐어요! ABBG 검토 후 확정돼요.');
   ['req-person','req-type','req-title','req-due','req-desc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('type-hint').classList.remove('show'); document.getElementById('due-panel').classList.remove('show'); document.getElementById('check-panel').classList.remove('show');
@@ -972,7 +989,7 @@ function renderRev() {
   if(!pending.length){pEl.innerHTML=`<div style="font-size:11px;color:var(--text-muted);padding:6px 0">대기 중인 요청이 없어요</div>`;}
   else {
     pEl.innerHTML=pending.map(p=>{const ti=TI[p.type]||{}; return`<div class="pend-card" id="pc-${p.id}">
-      <div class="pend-hd" data-preview="${p.id}" style="cursor:pointer;"><div><div class="pend-nm">${esc(p.name)}</div><div class="pend-mt">요청자 ${esc(p.sub)} · 희망 납기 ${p.due.replace(/-/g,'.')} · ${p.regAt}</div></div><span class="bpri ${p.priority==='urgent'?'b-urg':'b-nrm'}">${p.priority==='urgent'?'급건':'일반'}</span></div>
+      <div class="pend-hd" data-preview="${p.id}" style="cursor:pointer;"><div><div class="pend-nm">${esc(p.name)}</div><div class="pend-mt">요청자 ${esc(p.sub)} · 희망 납기 ${p.due.replace(/-/g,'.')} · ${p.regAt}</div></div>${priBadge(p.priority)}</div>
       <div class="pend-bd">
         <div class="pend-f"><div class="pend-fl">작업 유형</div><div class="pend-fv">${ti.name||p.type}${ti.days?' ('+ti.days+')':''}</div></div>
         <div class="pend-f"><div class="pend-fl">희망 납기</div><div class="pend-fv">${p.due.replace(/-/g,'.')}</div></div>
@@ -981,13 +998,13 @@ function renderRev() {
       <div class="rc-asgn">
         <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:11px;padding:5px 8px;"><option value="">선택</option><option value="1">1</option><option value="2">2</option></select></div>
         <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}" style="font-size:11px;padding:5px 8px;"></div>
-        <div><div class="rc-al">시작일 (자동)</div><input type="date" id="cstart-${p.id}" style="font-size:11px;padding:5px 8px;background:var(--surface-1);" readonly></div>
+        <div><div class="rc-al">시작일 (자동, 수정 가능)</div><input type="date" id="cstart-${p.id}" max="${p.due}" style="font-size:11px;padding:5px 8px;"></div>
       </div>
       <div class="rc-ft"><button class="btn-rj" data-id="${p.id}">반려</button><button class="btn-ap" data-id="${p.id}">✓ 승인 · 스케줄 반영</button></div>
     </div>`;}).join('');
     pending.forEach(p=>{
       const cdue=document.getElementById('cdue-'+p.id), cstart=document.getElementById('cstart-'+p.id);
-      const calcS=()=>{if(!cdue.value)return; const d=new Date(cdue.value+'T00:00:00'); d.setDate(d.getDate()-(DM[p.type]||1)); cstart.value=fmt(d);};
+      const calcS=()=>{if(!cdue.value)return; cstart.max=cdue.value; const d=new Date(cdue.value+'T00:00:00'); d.setDate(d.getDate()-(TI[p.type]?.minDays ?? 1)); cstart.value=fmt(d);};
       calcS(); cdue.onchange=calcS;
       document.querySelector(`.btn-ap[data-id="${p.id}"]`).onclick = () => appR(p.id);
       document.querySelector(`.btn-rj[data-id="${p.id}"]`).onclick = () => rejR(p.id);
@@ -1000,7 +1017,7 @@ function renderRev() {
         document.getElementById('modal-bd').innerHTML = `
           <div class="modal-row">
             <div class="modal-field"><div class="modal-fl">요청자</div><div class="modal-fv">${esc(p.sub)}</div></div>
-            <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv"><span class="bpri ${p.priority==='urgent'?'b-urg':'b-nrm'}">${p.priority==='urgent'?'급건':'일반'}</span></div></div>
+            <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv">${priBadge(p.priority)}</div></div>
             <div class="modal-field"><div class="modal-fl">작업 유형</div><div class="modal-fv">${ti2.name||p.type}${ti2.days?' ('+ti2.days+')':''}</div></div>
             <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
             <div class="modal-field modal-ff"><div class="modal-fl">요청 내용 · 드라이브</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.6">${esc(p.desc)||'—'}</div></div>
@@ -1021,7 +1038,7 @@ function renderRev() {
         <button class="btn-quick-done${t.done?' done':''}" data-id="${t.id}" type="button">${t.done?'미완료로 변경':'완료 처리'}</button>
         <div style="min-width:0;"><div class="req-card-nm">${esc(t.name)}</div><div class="req-card-mt">${esc(t.sub)} · 납기 ${t.due.replace(/-/g,'.')}</div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:5px">${sBadge(t.slot)}<span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span><span class="bpri ${t.priority==='urgent'?'b-urg':'b-nrm'}">${t.priority==='urgent'?'급건':'일반'}</span></div>
+      <div style="display:flex;align-items:center;gap:5px">${sBadge(t.slot)}<span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span>${priBadge(t.priority)}</div>
     </div>
   </div>`).join(''));
   bindDnTog(cEl);
@@ -1048,6 +1065,7 @@ async function appR(id) {
     if(!slot){alert('구좌를 선택해주세요.'); return;}
     if(!cdue){alert('납기일을 입력해주세요.'); return;}
     if(isO(cdue)){alert('공휴일/휴무일이에요.'); return;}
+    if(cstart && cstart>cdue){alert('시작일이 납기일보다 늦을 수 없어요.'); return;}
     const start = cstart||cdue;
     // 같은 구좌에서 작업 기간이 겹치는 확정 작업이 있으면 승인 전에 경고
     const conflicts = tasks.filter(t=>!t.done && t.slot===slot && t.start<=cdue && t.due>=start);
@@ -1222,34 +1240,7 @@ function renderG() {
         if(isPend) {
           const p = pending.find(x => x.id === id);
           if(!p) return;
-          const ti = TI[p.type]||{};
-          hideTaskModalActions();
-          document.getElementById('modal-title').textContent = p.name;
-          document.getElementById('modal-bd').innerHTML = `
-            <div class="modal-row">
-              <div class="modal-field"><div class="modal-fl">요청자</div><div class="modal-fv">${esc(p.sub)}</div></div>
-              <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status pend-status">검토 대기</span></div></div>
-              <div class="modal-field"><div class="modal-fl">작업 유형</div><div class="modal-fv">${ti.name||p.type}${ti.days?' ('+ti.days+')':''}</div></div>
-              <div class="modal-field"><div class="modal-fl">희망 납기</div><div class="modal-fv">${p.due.replace(/-/g,'.')}</div></div>
-              <div class="modal-field modal-ff"><div class="modal-fl">요청 내용</div><div class="modal-fv" style="white-space:pre-wrap;line-height:1.5">${esc(p.desc)||'—'}</div></div>
-            </div>`;
-          const editBtn = document.getElementById('modal-edit');
-          editBtn.style.display = 'inline-flex';
-          editBtn.textContent = '수정';
-          editBtn.onclick = () => {
-            closeModal();
-            sw('form');
-            setTimeout(() => {
-              document.getElementById('req-person').value = p.sub;
-              document.getElementById('req-type').value = p.type;
-              document.getElementById('req-title').value = p.name;
-              document.getElementById('req-due').value = p.due;
-              document.getElementById('req-desc').value = p.desc||'';
-              setPri(p.priority); onDue(); onType(); runC();
-              rejSilent(p.id);
-            }, 100);
-          };
-          document.getElementById('modal-bg').classList.add('show');
+          showPendingModal(p);
         } else {
           const t = tasks.find(x => x.id === id);
           if(!t) return;
