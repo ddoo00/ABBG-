@@ -205,9 +205,7 @@
     </div>
 
     <div class="page" id="page-review">
-      <div class="pg-hd"><div class="pg-title">검토 · 확정</div><div class="pg-sub">대기 중인 요청을 승인하고 전체 작업 목록을 관리해요</div></div>
-      <div class="abbg-banner"><i class="ti ti-shield-check"></i>ABBG 전용 — 인증된 팀원만 접근할 수 있어요</div>
-      <div id="rev-capacity"></div>
+      <div class="pg-hd"><div class="pg-title">검토 · 확정 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div><div class="pg-sub">대기 중인 요청을 승인하고 전체 작업 목록을 관리해요</div></div>
       <div class="sec-lbl">이번 주 · 다음 주 스케줄</div>
       <div id="rev-schedule"></div>
       <div class="sec-lbl" style="margin-top:14px">확인 필요 — 검토 대기 중</div>
@@ -218,8 +216,7 @@
     </div>
 
     <div class="page" id="page-settings">
-      <div class="pg-hd"><div class="pg-title">설정</div><div class="pg-sub">ABBG 전용 설정을 관리해요</div></div>
-      <div class="abbg-banner"><i class="ti ti-shield-check"></i>ABBG 전용</div>
+      <div class="pg-hd"><div class="pg-title">설정 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div><div class="pg-sub">ABBG 전용 설정을 관리해요</div></div>
       <div class="pw-box">
         <div class="pw-ttl">비밀번호 변경</div>
         <div class="pw-f"><span class="lbl">현재 비밀번호</span><input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" id="pw-cur" placeholder="현재 6자리 숫자"></div>
@@ -351,6 +348,15 @@ function capFor(type){ return CAP_FRIENDLY_TYPES.includes(type) ? CAP_FRIENDLY_M
 function urgentItemsOn(dateStr, excludeId) {
   const conf = tasks.filter(t=>!t.done && t.priority==='urgent' && t.id!==excludeId &&
     (t.due===dateStr || (t.start && t.start<=dateStr && t.due>dateStr)))
+    .map(t=>({name:t.name, sub:t.sub, due:t.due}));
+  const wait = pending.filter(p=>p.priority==='urgent' && p.due===dateStr && p.id!==excludeId)
+    .map(p=>({name:p.name, sub:p.sub, due:p.due}));
+  return conf.concat(wait);
+}
+// 그 날짜에 '마감'인 급건만 카운트 (간트차트에 보이는 '마감' 배지 기준과 정확히 맞추기 위한 버전 —
+// urgentItemsOn()과 달리 진행 중(wip)인 작업은 포함하지 않음)
+function urgentDueOn(dateStr, excludeId) {
+  const conf = tasks.filter(t=>!t.done && t.priority==='urgent' && t.due===dateStr && t.id!==excludeId)
     .map(t=>({name:t.name, sub:t.sub, due:t.due}));
   const wait = pending.filter(p=>p.priority==='urgent' && p.due===dateStr && p.id!==excludeId)
     .map(p=>({name:p.name, sub:p.sub, due:p.due}));
@@ -517,7 +523,7 @@ function sw(tab) {
     const m=document.getElementById('mtab-'+t); if(m) m.classList.toggle('active',t===tab);
   });
   const mpg=document.getElementById('mpg'); if(mpg) mpg.textContent=PAGES[tab]||'';
-  if(tab==='review') { renderRev(); renderRevSchedule(); renderCapacityAlerts(); }
+  if(tab==='review') { renderRev(); renderRevSchedule(); }
   if(tab==='requests') renderReqList();
   if(tab==='schedule') renderG();
   if(tab==='people') {renderP(); renderO();}
@@ -712,7 +718,7 @@ function showPendingModal(p) {
       const { error } = await sb.from('pending').delete().eq('id',p.id);
       if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
       pending.splice(pending.indexOf(p),1);
-      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); renderCapacityAlerts(); showT('요청이 취소됐어요.');
+      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); showT('요청이 취소됐어요.');
     } finally {
       cancelBtn.disabled = false;
     }
@@ -774,7 +780,7 @@ function showTaskModal(t) {
     tasks.splice(tasks.indexOf(t), 1);
     pending.push({id:data[0].id, name:t.name, sub:t.sub, type:'etc',
       due:t.due, priority:t.priority, desc:t.desc||'', regAt:TODAY});
-    updB(); renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
+    updB(); renderRev(); renderG(); renderReqList(); renderRevSchedule();
     closeModal();
     sw('form');
     setTimeout(()=>{
@@ -944,7 +950,6 @@ async function submitReq() {
   ['req-person','req-type','req-title','req-due','req-desc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('type-hint').classList.remove('show'); document.getElementById('due-panel').classList.remove('show'); document.getElementById('check-panel').classList.remove('show');
   document.getElementById('due-suggest').classList.remove('show'); document.getElementById('due-suggest').innerHTML='';
-  renderCapacityAlerts();
   fPri=''; ['urgent','normal','low'].forEach(k=>document.getElementById('p-'+k).className='pbtn');
 }
 function updB() {
@@ -974,43 +979,13 @@ function copyText(text) {
     fallbackCopy(text);
   }
 }
-
-// ── 검토·확정 페이지 — 급건 캐파 초과(일정 조율 필요) 안내 ──
-// 오늘부터 2주간, 유형과 무관하게 급건이 CAP_FRIENDLY_MAX(하루 3건)를 넘는 날짜를 찾아 안내하고,
-// 그레인온에 바로 카톡으로 보낼 수 있는 문구를 복사할 수 있게 함
-function renderCapacityAlerts() {
-  const el = document.getElementById('rev-capacity');
-  if(!el) return;
-  const alerts = [];
-  let d = new Date(TODAY+'T00:00:00');
-  for(let i=0;i<14;i++){
-    const s = fmt(d);
-    if(!isO(s)){
-      const items = urgentItemsOn(s);
-      if(items.length >= CAP_FRIENDLY_MAX) alerts.push({date:s, items});
-    }
-    d.setDate(d.getDate()+1);
-  }
-  if(!alerts.length){ el.innerHTML=''; return; }
-  el.innerHTML = `<div class="sec-lbl" style="margin-top:0">⚠ 일정 조율이 필요해요</div>` + alerts.map(a=>{
-    const dateLbl = a.date.replace(/-/g,'.');
-    const namesHtml = a.items.map(x=>`<div>· ${esc(x.name)} <span style="color:var(--text-muted)">(${esc(x.sub)})</span></div>`).join('');
-    return `<div class="cap-alert-card">
-      <div class="cap-alert-hd"><span class="cap-alert-date">${dateLbl}</span><span class="cap-alert-cnt">급건 ${a.items.length}건</span></div>
-      <div class="cap-alert-list">${namesHtml}</div>
-      <button class="btn-copy-kakao" data-date="${a.date}" type="button">💬 카톡으로 복사</button>
-    </div>`;
-  }).join('');
-  el.querySelectorAll('.btn-copy-kakao').forEach(btn=>{
-    btn.onclick = () => {
-      const a = alerts.find(x=>x.date===btn.dataset.date);
-      if(!a) return;
-      const dateLbl = a.date.replace(/-/g,'.');
-      const lines = a.items.map(x=>`- ${x.name} (${x.sub})`).join('\n');
-      const msg = `안녕하세요! ${dateLbl} 예정된 급건이 총 ${a.items.length}건으로 캐파를 넘을 것 같아요.\n\n${lines}\n\n우선순위 전달주시면 반영해서 진행하겠습니다 :)`;
-      copyText(msg);
-    };
-  });
+// 특정 날짜에 마감인 작업(우선순위 무관, 완료 제외) 목록을 카톡 붙여넣기용 텍스트로 복사
+function copyDayTasks(dateStr) {
+  const items = tasks.filter(t=>!t.done && t.due===dateStr).map(t=>({name:t.name, sub:t.sub, priority:t.priority}));
+  if(!items.length){ showT('이 날 마감 예정인 작업이 없어요.'); return; }
+  const dateLbl = dateStr.replace(/-/g,'.');
+  const lines = items.map(x=>`- ${x.name} (${x.sub}${x.priority==='urgent'?', 급건':''})`).join('\n');
+  copyText(`${dateLbl} 마감 예정 작업 목록입니다.\n\n${lines}`);
 }
 
 function renderRevSchedule() {
@@ -1044,8 +1019,9 @@ function renderRevSchedule() {
     const off = isO(ds2);
     const isT = ds2 === todayStr;
     const isNextW = i >= 5;
-    const overload = !off && urgentItemsOn(ds2).length >= CAP_FRIENDLY_MAX;
+    const overload = !off && urgentDueOn(ds2).length >= CAP_FRIENDLY_MAX;
     html += `<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" style="width:52px;" title="${overload?'급건 캐파 초과 — 일정 조율 필요':''}">
+      <button class="day-copy-btn" data-date="${ds2}" type="button" title="이 날 마감건 복사" style="font-size:9px;"><i class="ti ti-copy"></i></button>
       <span class="dn" style="font-size:9px;${isNextW?'color:var(--text-muted)':''}">${d.getDate()}</span>
       <span class="dname" style="font-size:8px;">${DN2[i%5]}</span>
       ${off?`<span class="hol-nm" style="font-size:8px;">${gOL(ds2)}</span>`:overload?`<span class="overload-nm" style="font-size:8px;">⚠조율필요</span>`:''}
@@ -1074,10 +1050,10 @@ function renderRevSchedule() {
         else if(inR) cells += `<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}" style="height:14px;"></div></div></td>`;
         else cells += `<td class="dc${hc}"><div class="bw"></div></td>`;
       });
-      const dayOverload = t.priority==='urgent' && !t.done && urgentItemsOn(t.due).length >= CAP_FRIENDLY_MAX;
+      const dayOverload = t.priority==='urgent' && !t.done && urgentDueOn(t.due).length >= CAP_FRIENDLY_MAX;
       html += `<tr>
         <td class="tnc" style="padding:0 6px;">
-          <div class="tn" style="font-size:10px;">${dayOverload?'⚠ ':''}${esc(t.name)}</div>
+          <div class="tn" style="font-size:10px;">${esc(t.name)}${dayOverload?'<span class="overload-flag">⚠ 조율필요</span>':''}</div>
           <div class="ts-s" style="font-size:9px;">${esc(t.sub)}</div>
         </td>
         <td style="width:50px;padding:0 4px;">${sBadge(t.slot)}</td>
@@ -1102,6 +1078,9 @@ function renderRevSchedule() {
     ${html}
     <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">확정된 작업 ${visible.length}건 · 새 요청 승인 전 충돌 여부를 확인해주세요</div>
   `;
+  el.querySelectorAll('.day-copy-btn').forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); copyDayTasks(btn.dataset.date); };
+  });
 }
 
 function renderRev() {
@@ -1202,7 +1181,7 @@ async function appR(id) {
     }
     tasks.push({id:data[0].id,name:p.name,sub:p.sub,start,due:cdue,priority:p.priority,slot,done:false,desc:p.desc||''});
     if(!delErr) pending.splice(pending.indexOf(p),1);
-    updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); renderCapacityAlerts(); showT(p.name+' 승인됐어요!');
+    updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); showT(p.name+' 승인됐어요!');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
@@ -1216,7 +1195,7 @@ async function rejR(id) {
   try {
     const { error } = await sb.from('pending').delete().eq('id',id);
     if(error){ showT('반려 실패: '+error.message+' — 다시 시도해주세요.'); return; }
-    pending.splice(idx,1); updB(); renderRev(); renderCapacityAlerts(); showT(name+' 반려됐어요.');
+    pending.splice(idx,1); updB(); renderRev(); showT(name+' 반려됐어요.');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
@@ -1226,11 +1205,11 @@ async function toggleDone(id, opts) {
   const t=tasks.find(x=>x.id===id); if(!t) return;
   const prev = t.done;
   t.done = !t.done;
-  renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
+  renderRev(); renderG(); renderReqList(); renderRevSchedule();
   const { error } = await sb.from('tasks').update({done:t.done}).eq('id',id);
   if(error){
     t.done = prev; // 실패 시 되돌림
-    renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
+    renderRev(); renderG(); renderReqList(); renderRevSchedule();
     showT('처리 실패: '+error.message+' — 다시 시도해주세요.');
     return;
   }
@@ -1244,7 +1223,7 @@ async function delTask(id) {
   const name=tasks[idx].name;
   const { error } = await sb.from('tasks').delete().eq('id',id);
   if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return false; }
-  tasks.splice(idx,1); renderRev(); renderG(); renderReqList(); renderRevSchedule(); renderCapacityAlerts();
+  tasks.splice(idx,1); renderRev(); renderG(); renderReqList(); renderRevSchedule();
   showT(name+' 삭제됐어요.');
   return true;
 }
@@ -1318,8 +1297,8 @@ function renderG() {
   const days=getWD(wkOff); const ts=TODAY;
   document.getElementById('wk-lbl').textContent=`${days[0].getMonth()+1}/${days[0].getDate()} – ${days[4].getMonth()+1}/${days[4].getDate()}`;
   document.getElementById('gh').innerHTML='<tr><th style="min-width:100px">작업명</th><th style="width:64px">구좌</th>'+
-    days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off; const overload=!off&&urgentItemsOn(ds).length>=CAP_FRIENDLY_MAX;
-      return`<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" title="${overload?'급건 캐파 초과 — 일정 조율 필요':''}"><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${gOL(ds)}</span>`:overload?`<span class="overload-nm">⚠조율필요</span>`:''}</th>`;
+    days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off; const overload=!off&&urgentDueOn(ds).length>=CAP_FRIENDLY_MAX;
+      return`<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" title="${overload?'급건 캐파 초과 — 일정 조율 필요':''}"><button class="day-copy-btn" data-date="${ds}" type="button" title="이 날 마감건 복사"><i class="ti ti-copy"></i></button><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${gOL(ds)}</span>`:overload?`<span class="overload-nm">⚠조율필요</span>`:''}</th>`;
     }).join('')+'</tr>';
   const ds=days.map(fmt);
   const weekStart=ds[0], weekEnd=ds[ds.length-1];
@@ -1341,12 +1320,15 @@ function renderG() {
         if(inR) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}"></div></div></td>`;
         return`<td class="dc${hc}"><div class="bw"></div></td>`;
       }).join('');
-      const dayOverload = t.priority==='urgent' && !t.done && urgentItemsOn(t.due).length>=CAP_FRIENDLY_MAX;
-      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div style="display:flex;align-items:center;gap:6px;">${t.isPend?'':`<button class="gt-check${t.done?' done':''}" data-id="${t.id}" type="button" title="${t.done?'미완료로 변경':'완료 처리'}">${t.done?'✓':''}</button>`}<div><div class="${t.isPend?'tn-p':'tn'}">${dayOverload?'⚠ ':''}${esc(t.name)}</div><div class="ts-s">${esc(t.sub)}</div></div></div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
+      const dayOverload = t.priority==='urgent' && !t.done && urgentDueOn(t.due).length>=CAP_FRIENDLY_MAX;
+      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div style="display:flex;align-items:center;gap:6px;">${t.isPend?'':`<button class="gt-check${t.done?' done':''}" data-id="${t.id}" type="button" title="${t.done?'미완료로 변경':'완료 처리'}">${t.done?'✓':''}</button>`}<div><div class="${t.isPend?'tn-p':'tn'}">${esc(t.name)}${dayOverload?'<span class="overload-flag">⚠ 조율필요</span>':''}</div><div class="ts-s">${esc(t.sub)}</div></div></div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
     }).join('');
 
   // 간트 행 클릭 이벤트
   setTimeout(() => {
+    document.querySelectorAll('#gh .day-copy-btn').forEach(btn => {
+      btn.onclick = (e) => { e.stopPropagation(); copyDayTasks(btn.dataset.date); };
+    });
     document.querySelectorAll('#gb .gt-check').forEach(btn => {
       btn.onclick = async (e) => {
         e.stopPropagation();
@@ -1394,13 +1376,13 @@ function setupRealtime() {
   sb.channel('rt-pending').on('postgres_changes', {event:'*', schema:'public', table:'pending'}, payload => {
     if(payload.eventType==='DELETE') removeLocalById(pending, payload.old.id);
     else upsertLocal(pending, payload.new, mapPending);
-    updB(); renderReqList(); renderRev(); renderG(); renderCapacityAlerts();
+    updB(); renderReqList(); renderRev(); renderG();
   }).subscribe();
 
   sb.channel('rt-tasks').on('postgres_changes', {event:'*', schema:'public', table:'tasks'}, payload => {
     if(payload.eventType==='DELETE') removeLocalById(tasks, payload.old.id);
     else upsertLocal(tasks, payload.new, mapTask);
-    renderReqList(); renderRev(); renderRevSchedule(); renderG(); renderCapacityAlerts();
+    renderReqList(); renderRev(); renderRevSchedule(); renderG();
   }).subscribe();
 
   sb.channel('rt-people').on('postgres_changes', {event:'*', schema:'public', table:'people'}, payload => {
@@ -1419,7 +1401,7 @@ function setupRealtime() {
 // ── 초기 로드 ──
 checkSession();
 syncHolidaysFromAPI().then(() => { renderG(); }); // 최신 공휴일 반영되면 스케줄 다시 그림
-loadAll().then(() => { renderG(); renderCapacityAlerts(); setupRealtime(); });
+loadAll().then(() => { renderG(); setupRealtime(); });
 </script>
 </body>
 </html>
