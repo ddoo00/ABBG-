@@ -336,7 +336,7 @@ input::placeholder,textarea::placeholder{color:var(--t3);}
 /* 간트 */
 .gt-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .gt{width:100%;border-collapse:collapse;}
-.gt th{font-size:var(--fs-xs);font-weight:700;color:var(--t2);text-align:center;padding:6px 2px 4px;border-bottom:2px solid var(--border-strong);background:var(--surface-sub);vertical-align:top;}
+.gt th{font-size:var(--fs-xs);font-weight:700;color:var(--t2);text-align:center;padding:0 2px;border-bottom:2px solid var(--border-strong);background:var(--surface-sub);vertical-align:middle;height:52px;}
 .gt td{height:44px;padding:0 8px;border-bottom:1px solid var(--border);vertical-align:middle;background:var(--surface);}
 .gt tr:hover td{background:#f9fafb;}
 .gt th.hol{background:#fff5f5;}.gt td.hol{background:#fffafa;}

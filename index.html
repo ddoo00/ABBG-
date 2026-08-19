@@ -1591,7 +1591,7 @@ function renderLegend() {
 function renderG() {
   const days=getWD(wkOff); const ts=TODAY;
   document.getElementById('wk-lbl').textContent=`${days[0].getMonth()+1}/${days[0].getDate()} – ${days[4].getMonth()+1}/${days[4].getDate()}`;
-  document.getElementById('gh').innerHTML='<tr><th style="min-width:100px">작업명</th><th style="width:64px">구좌</th>'+
+  document.getElementById('gh').innerHTML='<tr><th style="min-width:100px;">작업명</th><th style="width:64px;">구좌</th>'+
     days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off; const overload=!off&&urgentDueOn(ds).length>=CAP_FRIENDLY_MAX;
       const holName = off ? gOL(ds) : '';
       const thTitle = off ? holName : overload ? '급건 캐파 초과 — 일정 조율 필요' : '';
