@@ -1161,7 +1161,7 @@ function renderRevSchedule() {
       <button class="day-copy-btn" data-date="${ds2}" type="button" title="이 날 마감건 복사" style="font-size:9px;"><i class="ti ti-copy"></i></button>
       <span class="dn" style="font-size:9px;${isNextW?'color:var(--text-muted)':''}">${d.getDate()}</span>
       <span class="dname" style="font-size:8px;">${DN2[i%5]}</span>
-      ${off?`<span class="hol-nm" style="font-size:8px;" title="${gOL(ds2)}">${gOL(ds2).replace(' 대체공휴일','*').replace(' 연휴','').split(' ')[0].slice(0,3)}</span>`:overload?`<span class="overload-nm" style="font-size:8px;">⚠</span>`:''}
+      ${overload?`<span class="overload-nm" style="font-size:8px;">⚠</span>`:''}
     </th>`;
   });
   html += '</tr></thead><tbody>';
@@ -1595,9 +1595,7 @@ function renderG() {
     days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off; const overload=!off&&urgentDueOn(ds).length>=CAP_FRIENDLY_MAX;
       const holName = off ? gOL(ds) : '';
       const thTitle = off ? holName : overload ? '급건 캐파 초과 — 일정 조율 필요' : '';
-      // 공휴일 이름이 길면 첫 2글자만 (예: 광복절→광복, 삼일절→삼일)
-      const holShort = holName.replace(' 대체공휴일','*').replace(' 연휴','').split(' ')[0].slice(0,3);
-      return`<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" title="${thTitle}"><button class="day-copy-btn" data-date="${ds}" type="button" title="이 날 마감건 복사"><i class="ti ti-copy"></i></button><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${holShort}</span>`:overload?`<span class="overload-nm">⚠</span>`:''}</th>`;
+      return`<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" title="${thTitle}"><button class="day-copy-btn" data-date="${ds}" type="button" title="이 날 마감건 복사"><i class="ti ti-copy"></i></button><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${overload?`<span class="overload-nm">⚠</span>`:''}</th>`;
     }).join('')+'</tr>';
   const ds=days.map(fmt);
   const weekStart=ds[0], weekEnd=ds[ds.length-1];
