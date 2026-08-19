@@ -400,13 +400,13 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 
 /* ── 모달 버튼 새 스타일 ── */
 .modal-btn-row{display:flex;gap:8px;justify-content:flex-end;width:100%;}
-.modal-btn-pri{padding:10px 20px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;min-width:72px;}
+.modal-btn-pri{padding:8px 16px;background:#111827;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;}
 .modal-btn-pri:hover{background:#1f2937;}
-.modal-btn-sec{padding:10px 18px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;min-width:72px;}
+.modal-btn-sec{padding:8px 16px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:7px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;}
 .modal-btn-sec:hover{border-color:var(--border-stronger);color:var(--text-primary);}
-.modal-btn-done{padding:10px 18px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;min-width:80px;}
+.modal-btn-done{padding:8px 16px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:7px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;}
 .modal-btn-done:hover{border-color:var(--c1);color:var(--c1d);}
-.modal-btn-del{padding:10px 18px;background:var(--surface-1);border:1px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:600;color:#991b1b;cursor:pointer;min-width:72px;}
+.modal-btn-del{padding:8px 16px;background:var(--surface-1);border:1px solid #fca5a5;border-radius:7px;font-size:13px;font-weight:600;color:#991b1b;cursor:pointer;}
 .modal-btn-del:hover{background:#fef2f2;}
 .modal-ft{padding:14px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;}
 
