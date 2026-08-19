@@ -33,7 +33,7 @@ body{background:#f8fafc;min-height:100vh;}
 .page{display:none;max-width:860px;margin:0 auto;}
 .page.active{display:block;max-width:860px;margin:0 auto;}
 /* ── 페이지 헤더 ── */
-.pg-hd{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.pg-hd{margin-bottom:20px;padding-bottom:0;}
 .pg-title{font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em;}
 .pg-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
 /* ── 카드 ── */
@@ -421,11 +421,11 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .rev-box-body:empty{display:none;}
 
 /* 검토 대기 중 박스 — 레퍼런스 상단 배너처럼 */
-.rev-box-pending{border-color:#fcd34d;background:#fffbeb;}
-.rev-box-pending .rev-box-hd{background:#fff8e6;border-bottom-color:#fcd34d;}
+.rev-box-pending{border-color:#fcd34d;background:#ffffff;}
+.rev-box-pending .rev-box-hd{background:#fffbeb;border-bottom-color:#fcd34d;}
 .rev-box-pending .rev-box-title{color:#92400e;}
 .rev-box-pending .rev-box-title i{color:#d97706;}
-.rev-box-pending .rev-box-body{background:#fffbeb;padding:12px 18px;}
+.rev-box-pending .rev-box-body{background:#ffffff;padding:12px 18px;}
 
 /* 검토 대기 카드: pending 박스 안에서는 배경 흰색으로 */
 .rev-box-pending .pend-card{background:var(--surface-0);border-color:#e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.04);}
