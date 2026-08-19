@@ -29,15 +29,15 @@ body{background:#f8fafc;min-height:100vh;}
 .abbg-lbl::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--c1);}
 /* ── 메인 ── */
 .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;background:#f8fafc;}
-.content{flex:1;padding:24px 28px;background:#f8fafc;}
-.page{display:none;}
-.page.active{display:block;}
+.content{flex:1;padding:24px 32px;background:#f8fafc;}
+.page{display:none;max-width:860px;}
+.page.active{display:block;max-width:860px;}
 /* ── 페이지 헤더 ── */
-.pg-hd{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);max-width:900px;}
+.pg-hd{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);}
 .pg-title{font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em;}
 .pg-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
 /* ── 카드 ── */
-.fc{background:var(--surface-0);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);max-width:680px;}
+.fc{background:var(--surface-0);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .ff{grid-column:1/-1;}
 .fld{display:flex;flex-direction:column;gap:5px;}
@@ -173,7 +173,7 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .leg-dot{width:9px;height:9px;border-radius:3px;}
 .leg-div{width:1px;height:12px;background:var(--border-strong);margin:0 2px;}
 /* ── 간트 ── */
-.gt-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);max-width:100%;}
+.gt-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .gt{width:100%;border-collapse:collapse;}
 .gt th{font-size:10px;font-weight:700;color:var(--text-muted);text-align:left;padding:8px;border-bottom:2px solid var(--border-strong);background:var(--surface-1);}
 .gt th.dc{text-align:center;}
@@ -380,3 +380,9 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .notif-msg{font-size:12px;color:var(--text-primary);line-height:1.5;font-weight:500;}
 .notif-msg b{font-weight:700;}
 .notif-time{font-size:11px;color:var(--text-muted);margin-top:2px;}
+
+#page-schedule{max-width:1100px;}
+
+/* ── 이름 클릭 수정 ── */
+.chip-name{border-radius:3px;transition:background .12s;}
+.chip-name:hover{text-decoration:underline;text-underline-offset:2px;opacity:.75;}

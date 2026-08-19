@@ -290,6 +290,25 @@
   </div>
 </div>
 
+<div class="modal-bg" id="rename-person-bg" style="z-index:310;">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-hd">
+      <div class="modal-title">클라이언트 담당자 이름 수정</div>
+      <button class="modal-close" id="rename-person-close">×</button>
+    </div>
+    <div class="modal-bd" style="gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">새 이름</label>
+        <input type="text" id="rename-person-input" maxlength="30" placeholder="이름 입력" style="font-size:14px;padding:10px 12px;">
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-modal-close" id="rename-person-cancel">취소</button>
+      <button class="btn-modal-edit" id="rename-person-ok">저장</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="rename-bg" style="z-index:310;">
   <div class="modal" style="max-width:360px;">
     <div class="modal-hd">
@@ -1319,8 +1338,9 @@ async function delTask(id) {
 }
 function renderP() {
   document.getElementById('pgrid').innerHTML=people.map((p,i)=>
-    `<div class="chip">${esc(p)}<button class="chip-x" data-i="${i}" type="button">×</button></div>`
+    `<div class="chip"><span class="chip-name" data-i="${i}" title="클릭하면 이름 수정">${esc(p)}</span><button class="chip-x" data-i="${i}" type="button">×</button></div>`
   ).join('');
+  document.querySelectorAll('#pgrid .chip-name').forEach(el=>el.onclick=()=>openRenamePersonModal(+el.dataset.i));
   document.querySelectorAll('#pgrid .chip-x').forEach(btn=>btn.onclick=()=>rmP(+btn.dataset.i));
   const sel=document.getElementById('req-person'); const cur=sel.value;
   sel.innerHTML='<option value="">담당자 선택</option>'+people.map(p=>`<option${p===cur?' selected':''}>${esc(p)}</option>`).join('');
@@ -1344,6 +1364,45 @@ async function rmP(i) {
   const { error } = await sb.from('people').delete().eq('name',n);
   if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return; }
   people.splice(i,1); renderP(); showT(n+' 삭제됐어요.');
+}
+// ── 클라이언트 담당자 이름 수정 ──
+let _renamePersonIdx = null;
+function openRenamePersonModal(i) {
+  _renamePersonIdx = i;
+  const inp = document.getElementById('rename-person-input');
+  inp.value = people[i];
+  document.getElementById('rename-person-bg').classList.add('show');
+  setTimeout(()=>{ inp.focus(); inp.select(); }, 80);
+}
+function closeRenamePersonModal() {
+  document.getElementById('rename-person-bg').classList.remove('show');
+  _renamePersonIdx = null;
+}
+document.getElementById('rename-person-close').onclick = closeRenamePersonModal;
+document.getElementById('rename-person-cancel').onclick = closeRenamePersonModal;
+document.getElementById('rename-person-bg').onclick = e => { if(e.target===document.getElementById('rename-person-bg')) closeRenamePersonModal(); };
+document.getElementById('rename-person-ok').onclick = () => renameP(_renamePersonIdx, document.getElementById('rename-person-input').value.trim());
+document.getElementById('rename-person-input').onkeydown = e => {
+  if(e.key==='Enter') renameP(_renamePersonIdx, document.getElementById('rename-person-input').value.trim());
+  if(e.key==='Escape') closeRenamePersonModal();
+};
+async function renameP(i, newName) {
+  if(i===null || i===undefined) return;
+  const oldName = people[i];
+  if(!newName){ showT('이름을 입력해주세요.'); return; }
+  if(newName===oldName){ closeRenamePersonModal(); return; }
+  if(people.includes(newName)){ showT('이미 있는 담당자 이름이에요!'); return; }
+  const btn = document.getElementById('rename-person-ok');
+  btn.disabled=true; btn.textContent='저장 중...';
+  try {
+    const { error } = await sb.from('people').update({name:newName}).eq('name',oldName);
+    if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
+    people[i] = newName;
+    closeRenamePersonModal();
+    renderP(); showT(newName+'으로 수정됐어요!');
+  } finally {
+    btn.disabled=false; btn.textContent='저장';
+  }
 }
 // ── 구좌 담당자 (ABBG 전용 — 추가/삭제하면 스케줄 필터·범례·구좌 배정 목록에 바로 반영돼요) ──
 let _renameTargetId = null;
@@ -1374,9 +1433,9 @@ function renderStaff() {
     ? '<span style="font-size:11px;color:var(--text-muted)">등록된 담당자 없음</span>'
     : staff.map(s=>{
         const c = slotColor(s.id);
-        return `<div class="chip" data-staff-id="${s.id}" style="background:${c.b};border-color:${c.m};color:${c.d};">${esc(s.name)}<button class="chip-edit" data-id="${s.id}" type="button" title="이름 수정" style="color:${c.d};opacity:.7;background:none;border:none;cursor:pointer;padding:0 2px 0 5px;font-size:12px;line-height:1;">✏</button><button class="chip-x" data-id="${s.id}" type="button" style="border-color:${c.d};color:${c.d};">×</button></div>`;
+        return `<div class="chip" data-staff-id="${s.id}" style="background:${c.b};border-color:${c.m};color:${c.d};"><span class="chip-name" data-id="${s.id}" title="클릭하면 이름 수정" style="cursor:pointer;">${esc(s.name)}</span><button class="chip-x" data-id="${s.id}" type="button" style="border-color:${c.d};color:${c.d};">×</button></div>`;
       }).join('');
-  el.querySelectorAll('.chip-edit').forEach(btn=>btn.onclick=()=>openRenameModal(+btn.dataset.id));
+  el.querySelectorAll('.chip-name').forEach(el=>el.onclick=()=>openRenameModal(+el.dataset.id));
   el.querySelectorAll('.chip-x').forEach(btn=>btn.onclick=()=>rmStaff(+btn.dataset.id));
 }
 async function renameStaff(id, newName) {
