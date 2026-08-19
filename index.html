@@ -1159,7 +1159,7 @@ function renderRevSchedule() {
       <button class="day-copy-btn" data-date="${ds2}" type="button" title="이 날 마감건 복사" style="font-size:9px;"><i class="ti ti-copy"></i></button>
       <span class="dn" style="font-size:9px;${isNextW?'color:var(--text-muted)':''}">${d.getDate()}</span>
       <span class="dname" style="font-size:8px;">${DN2[i%5]}</span>
-      ${off?`<span class="hol-nm" style="font-size:8px;">${gOL(ds2)}</span>`:overload?`<span class="overload-nm" style="font-size:8px;">⚠조율필요</span>`:''}
+      ${off?`<span class="hol-nm" style="font-size:8px;" title="${gOL(ds2)}">${gOL(ds2).split(' ')[0]}</span>`:overload?`<span class="overload-nm" style="font-size:8px;">⚠</span>`:''}
     </th>`;
   });
   html += '</tr></thead><tbody>';
@@ -1591,7 +1591,9 @@ function renderG() {
   document.getElementById('wk-lbl').textContent=`${days[0].getMonth()+1}/${days[0].getDate()} – ${days[4].getMonth()+1}/${days[4].getDate()}`;
   document.getElementById('gh').innerHTML='<tr><th style="min-width:100px">작업명</th><th style="width:64px">구좌</th>'+
     days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off; const overload=!off&&urgentDueOn(ds).length>=CAP_FRIENDLY_MAX;
-      return`<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" title="${overload?'급건 캐파 초과 — 일정 조율 필요':''}"><button class="day-copy-btn" data-date="${ds}" type="button" title="이 날 마감건 복사"><i class="ti ti-copy"></i></button><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${gOL(ds)}</span>`:overload?`<span class="overload-nm">⚠조율필요</span>`:''}</th>`;
+      const holName = off ? gOL(ds) : '';
+      const thTitle = off ? holName : overload ? '급건 캐파 초과 — 일정 조율 필요' : '';
+      return`<th class="dc${off?' hol':isT?' today-col':overload?' day-overload':''}" title="${thTitle}"><button class="day-copy-btn" data-date="${ds}" type="button" title="이 날 마감건 복사"><i class="ti ti-copy"></i></button><span class="dn">${d.getDate()}</span><span class="dname">${DN[i]}</span>${off?`<span class="hol-nm">${holName.split(' ')[0]}</span>`:overload?`<span class="overload-nm">⚠</span>`:''}</th>`;
     }).join('')+'</tr>';
   const ds=days.map(fmt);
   const weekStart=ds[0], weekEnd=ds[ds.length-1];
