@@ -66,8 +66,10 @@
 
     <div class="page active" id="page-form">
       <div class="pg-hd"><div class="pg-title">새 요청서 작성</div><div class="pg-sub">요청 내용을 입력하면 ABBG가 검토 후 일정을 확정해요</div></div>
+
       <div class="fc">
-        <div class="fg">
+        <div class="form-sec-lbl"><span class="form-step-num">1</span>기본 정보</div>
+        <div class="fg" style="margin-top:16px;">
           <div class="fld">
             <span class="lbl">요청자<span class="req">*</span></span>
             <select id="req-person"><option value="">담당자 선택</option></select>
@@ -103,17 +105,27 @@
             </div>
           </div>
           <div class="fld ff"><span class="lbl">작업명<span class="req">*</span></span><input type="text" id="req-title" placeholder="예) 바엘 올리브영 상세페이지 신규 제작"></div>
-          <div class="fld ff">
+        </div>
+      </div>
+
+      <div class="fc">
+        <div class="form-sec-lbl"><span class="form-step-num">2</span>요청 내용</div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:16px;">
+          <div class="fld">
             <span class="lbl">우선순위<span class="req">*</span></span>
-            <div class="pri-row">
+            <div class="pri-row" style="margin-top:4px;">
               <div class="pbtn" id="p-urgent"><div class="dot-u"></div>급건</div>
               <div class="pbtn" id="p-normal"><div class="dot-n"></div>일반</div>
               <div class="pbtn" id="p-low"><div class="dot-l"></div>여유</div>
             </div>
           </div>
-          <div class="fld ff"><span class="lbl">요청 내용 · 드라이브 경로<span class="req">*</span></span><textarea id="req-desc" placeholder="작업 내용, 수정사항, 드라이브 경로 또는 링크&#10;예) W:\공용 드라이브\커머스사업부\브랜드디자인팀\업무전달\..."></textarea></div>
+          <div class="fld">
+            <span class="lbl">작업 내용 · 드라이브 경로<span class="req">*</span></span>
+            <textarea id="req-desc" style="min-height:100px;" placeholder="작업 내용, 수정사항, 드라이브 경로 또는 링크&#10;예) W:\공용 드라이브\커머스사업부\브랜드디자인팀\업무전달\..."></textarea>
+          </div>
         </div>
       </div>
+
       <div class="cp" id="check-panel">
         <div class="cp-hd"><span class="cp-title">등록 전 확인이 필요해요</span><span class="cp-cnt" id="check-cnt"></span></div>
         <div id="check-items"></div>
@@ -267,12 +279,14 @@
       <div class="modal-title" id="modal-title"></div>
     </div>
     <div class="modal-bd" id="modal-bd"></div>
-    <div class="modal-ft" id="modal-ft" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
-      <div id="modal-warn" style="display:none;font-size:10px;color:#633806;margin-right:auto;">⚠️ 확정 작업 수정 시 ABBG 재검토 필요</div>
-      <button class="btn-modal-close" id="modal-delete" style="display:none;border-color:#F5C4B3;color:#712B13;">삭제</button>
-      <button class="btn-modal-close" id="modal-done" style="display:none">완료 처리</button>
-      <button class="btn-modal-close" id="modal-close2">닫기</button>
-      <button class="btn-modal-edit" id="modal-edit" style="display:none">수정</button>
+    <div class="modal-ft" id="modal-ft">
+      <div id="modal-warn" style="display:none;font-size:11px;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px;width:100%;margin-bottom:0;">⚠️ 확정 작업 수정 시 ABBG 재검토 필요</div>
+      <div class="modal-btn-row" id="modal-btn-row">
+        <button class="modal-btn-del" id="modal-delete" style="display:none;">삭제</button>
+        <button class="modal-btn-done" id="modal-done" style="display:none">완료 처리</button>
+        <button class="modal-btn-sec" id="modal-close2">닫기</button>
+        <button class="modal-btn-pri" id="modal-edit" style="display:none">수정</button>
+      </div>
     </div>
   </div>
 </div>
