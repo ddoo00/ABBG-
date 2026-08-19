@@ -720,7 +720,7 @@ function renderReqList() {
   if(!el) return;
 
   const pendHtml = pending.length === 0
-    ? '<div style="font-size:12px;color:var(--text-muted);padding:8px 0 4px">대기 중인 요청이 없어요</div>'
+    ? '<div style="font-size:13px;color:var(--text-muted);padding:12px 0">대기 중인 요청이 없어요</div>'
     : pending.map(p => `<div class="req-card pend clickable" data-id="${p.id}" data-pend="true" style="cursor:pointer;">
         <div class="req-card-hd">
           <div>
@@ -736,7 +736,7 @@ function renderReqList() {
 
   const filteredTasks = filterTasks(tasks);
   const confHtml = filteredTasks.length === 0
-    ? `<div style="font-size:12px;color:var(--text-muted);padding:8px 0 4px">${tasks.length===0?'확정된 작업이 없어요':'해당하는 작업이 없어요'}</div>`
+    ? `<div style="font-size:13px;color:var(--text-muted);padding:12px 0">${tasks.length===0?'확정된 작업이 없어요':'해당하는 작업이 없어요'}</div>`
     : filteredTasks.map(t => `<div class="req-card conf clickable" data-id="${t.id}" data-pend="false" style="cursor:pointer;">
         <div class="req-card-hd" style="align-items:center;border-bottom:none;flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:9px;min-width:0;">
@@ -1239,12 +1239,12 @@ function renderRev() {
       <div class="pend-bd">
         <div class="pend-f"><div class="pend-fl">작업 유형</div><div class="pend-fv">${ti.name||p.type}${ti.days?' <span style=\"font-size:11px;color:var(--text-muted)\">('+ti.days+')</span>':''}</div></div>
         <div class="pend-f"><div class="pend-fl">희망 납기</div><div class="pend-fv">${p.due.replace(/-/g,'.')}</div></div>
-        <div class="pend-f pend-ff"><div class="pend-fl">요청 내용 · 드라이브 경로</div><div class="pend-fv" style="white-space:pre-wrap;line-height:1.6;font-size:12px;">${esc(p.desc)||'—'}</div></div>
+        <div class="pend-f pend-ff"><div class="pend-fl">요청 내용 · 드라이브 경로</div><div class="pend-fv" style="white-space:pre-wrap;line-height:1.6;">${esc(p.desc)||'—'}</div></div>
       </div>
       <div class="rc-asgn">
-        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:12px;padding:7px 10px;"><option value="">선택</option>${staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
-        <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}" style="font-size:12px;padding:7px 10px;"></div>
-        <div><div class="rc-al">시작일 (자동, 수정 가능)</div><input type="date" id="cstart-${p.id}" max="${p.due}" style="font-size:12px;padding:7px 10px;"></div>
+        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}"><option value="">선택</option>${staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
+        <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}"></div>
+        <div><div class="rc-al">시작일 (자동, 수정 가능)</div><input type="date" id="cstart-${p.id}" max="${p.due}"></div>
       </div>
       <div class="rc-ft"><button class="btn-rj" data-id="${p.id}">반려</button><button class="btn-ap" data-id="${p.id}"><i class="ti ti-check"></i> 승인 · 스케줄 반영</button></div>
     </div>`;}).join('');
