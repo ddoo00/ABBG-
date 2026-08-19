@@ -1622,7 +1622,7 @@ function renderG() {
         return`<td class="dc${hc}"><div class="bw"></div></td>`;
       }).join('');
       const dayOverload = t.priority==='urgent' && !t.done && urgentDueOn(t.due).length>=CAP_FRIENDLY_MAX;
-      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div style="display:flex;align-items:center;gap:6px;">${t.isPend?'':`<button class="gt-check${t.done?' done':''}" data-id="${t.id}" type="button" title="${t.done?'미완료로 변경':'완료 처리'}">${t.done?'✓':''}</button>`}<div><div class="${t.isPend?'tn-p':'tn'}">${esc(t.name)}${dayOverload?'<span class="overload-flag">⚠ 조율필요</span>':''}</div><div class="ts-s">${esc(t.sub)}</div></div></div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
+      return`<tr class="${t.isPend?'row-p':''}clickable" data-id="${t.id}" data-pend="${t.isPend}"><td class="tnc"><div style="display:flex;align-items:center;gap:10px;">${t.isPend?'':`<button class="gt-check${t.done?' done':''}" data-id="${t.id}" type="button" title="${t.done?'미완료로 변경':'완료 처리'}">${t.done?'✓':''}</button>`}<div><div class="${t.isPend?'tn-p':'tn'}">${esc(t.name)}${dayOverload?'<span class="overload-flag">⚠ 조율필요</span>':''}</div><div class="ts-s">${esc(t.sub)}</div></div></div></td><td style="width:64px;padding:0 5px">${t.isPend?`<span class="sb-etc">대기중</span>`:sBadge(t.slot)}</td>${cells}</tr>`;
     }).join('');
 
   // 간트 행 클릭 이벤트
