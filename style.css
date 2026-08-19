@@ -392,17 +392,6 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 /* notif-drop: fixed positioning */
 #notif-drop{position:fixed;top:60px;left:14px;width:300px;}
 
-/* ── 검토·확정 2컬럼 레이아웃 ── */
-.rev-layout{display:flex;flex-direction:column;gap:20px;}
-.rev-left{display:flex;flex-direction:column;gap:0;}
-.rev-right{display:flex;flex-direction:column;gap:0;}
-.rev-section-hd{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px;}
-.rev-section-hd i{font-size:14px;color:var(--text-muted);}
-.rev-section-hd .nb{margin-left:4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--c2);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;}
-.rev-section-hd .nb.show{display:flex;}
-
-@media(max-width:900px){
-  .rev-layout{grid-template-columns:1fr;}
 }
 
 /* ── 요청서 섹션 헤더 ── */
@@ -420,3 +409,38 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .modal-btn-del{padding:10px 18px;background:var(--surface-1);border:1px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:600;color:#991b1b;cursor:pointer;min-width:72px;}
 .modal-btn-del:hover{background:#fef2f2;}
 .modal-ft{padding:14px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;}
+
+/* ── 검토·확정 섹션 박스 ── */
+.rev-box{background:var(--surface-0);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.rev-box-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface-1);}
+.rev-box-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--text-primary);}
+.rev-box-title i{font-size:15px;color:var(--text-muted);}
+.rev-box-title .nb{margin-left:2px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--c2);color:#fff;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;}
+.rev-box-title .nb.show{display:flex;}
+.rev-box-body{padding:14px 18px;}
+.rev-box-body:empty{display:none;}
+
+/* 검토 대기 중 박스 — 레퍼런스 상단 배너처럼 */
+.rev-box-pending{border-color:#fcd34d;background:#fffbeb;}
+.rev-box-pending .rev-box-hd{background:#fff8e6;border-bottom-color:#fcd34d;}
+.rev-box-pending .rev-box-title{color:#92400e;}
+.rev-box-pending .rev-box-title i{color:#d97706;}
+.rev-box-pending .rev-box-body{background:#fffbeb;padding:12px 18px;}
+
+/* 검토 대기 카드: pending 박스 안에서는 배경 흰색으로 */
+.rev-box-pending .pend-card{background:var(--surface-0);border-color:#e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.rev-box-pending .pend-card .pend-hd{background:var(--surface-1);border-color:#e5e7eb;}
+
+/* 검토 대기 없을 때 */
+.rev-pending-empty{padding:16px 0;text-align:center;font-size:13px;color:var(--text-muted);}
+
+/* 스케줄 박스 내부 여백 조정 */
+.rev-box-body .sc-ctrl,
+.rev-box-body .leg-row,
+.rev-box-body .gt-wrap{margin:0;}
+.rev-box-body .leg-row{margin-bottom:10px;}
+
+/* 확정 작업 박스 내부 */
+.rev-box-body .dn-tog{margin-bottom:12px;}
+.rev-box-body .req-card{margin-bottom:8px;}
+.rev-box-body .req-card:last-child{margin-bottom:0;}

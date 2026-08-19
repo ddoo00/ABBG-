@@ -226,17 +226,29 @@
 
     <div class="page" id="page-review">
       <div class="pg-hd"><div class="pg-title">검토 · 확정 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div><div class="pg-sub">대기 중인 요청을 승인하고 전체 작업 목록을 관리해요</div></div>
-      <div class="rev-layout">
-        <div class="rev-left">
-          <div class="rev-section-hd"><i class="ti ti-clock-hour-4"></i>검토 대기 중<span class="nb" id="nb2"></span></div>
-          <div id="rev-pending"></div>
+
+      <!-- 검토 대기 중 -->
+      <div class="rev-box rev-box-pending">
+        <div class="rev-box-hd">
+          <div class="rev-box-title"><i class="ti ti-clock-hour-4"></i>검토 대기 중<span class="nb" id="nb2"></span></div>
         </div>
-        <div class="rev-right">
-          <div class="rev-section-hd" style="margin-bottom:10px;"><i class="ti ti-calendar-week"></i>이번 주 · 다음 주 스케줄</div>
-          <div id="rev-schedule"></div>
-          <div class="rev-section-hd" style="margin-top:18px;margin-bottom:10px;"><i class="ti ti-list-check"></i>확정된 작업</div>
-          <div id="rev-confirmed"></div>
+        <div class="rev-box-body" id="rev-pending"></div>
+      </div>
+
+      <!-- 이번 주·다음 주 스케줄 -->
+      <div class="rev-box">
+        <div class="rev-box-hd">
+          <div class="rev-box-title"><i class="ti ti-calendar-week"></i>이번 주 · 다음 주 스케줄</div>
         </div>
+        <div class="rev-box-body" id="rev-schedule"></div>
+      </div>
+
+      <!-- 확정된 작업 -->
+      <div class="rev-box">
+        <div class="rev-box-hd">
+          <div class="rev-box-title"><i class="ti ti-list-check"></i>확정된 작업</div>
+        </div>
+        <div class="rev-box-body" id="rev-confirmed"></div>
       </div>
     </div>
 
@@ -741,11 +753,18 @@ function renderReqList() {
       </div>`).join('');
 
   el.innerHTML = `
-    <div class="sec-lbl">검토 대기 중</div>
-    ${pendHtml}
-    <div class="sec-lbl" style="margin-top:14px">확정된 작업</div>
-    ${dnTogHtml()}
-    ${confHtml}
+    <div class="rev-box rev-box-pending">
+      <div class="rev-box-hd">
+        <div class="rev-box-title"><i class="ti ti-clock-hour-4"></i>검토 대기 중</div>
+      </div>
+      <div class="rev-box-body">${pending.length===0?'<div class="rev-pending-empty"><i class=\'ti ti-check\' style=\'font-size:16px;display:block;margin:0 auto 4px;color:var(--c1)\'></i>대기 중인 요청이 없어요</div>':pendHtml}</div>
+    </div>
+    <div class="rev-box">
+      <div class="rev-box-hd">
+        <div class="rev-box-title"><i class="ti ti-list-check"></i>확정된 작업</div>
+      </div>
+      <div class="rev-box-body">${dnTogHtml()}${confHtml}</div>
+    </div>
   `;
   bindDnTog(el);
   el.querySelectorAll('.btn-quick-done').forEach(btn => {
@@ -1203,7 +1222,7 @@ function renderRevSchedule() {
 
 function renderRev() {
   const pEl=document.getElementById('rev-pending');
-  if(!pending.length){pEl.innerHTML=`<div style="font-size:11px;color:var(--text-muted);padding:6px 0">대기 중인 요청이 없어요</div>`;}
+  if(!pending.length){pEl.innerHTML=`<div class="rev-pending-empty"><i class="ti ti-check" style="font-size:20px;display:block;margin:0 auto 6px;color:var(--c1)"></i>모든 요청을 검토했어요</div>`;}
   else {
     pEl.innerHTML=pending.map(p=>{const ti=TI[p.type]||{}; return`<div class="pend-card" id="pc-${p.id}">
       <div class="pend-hd" data-preview="${p.id}" style="cursor:pointer;">
