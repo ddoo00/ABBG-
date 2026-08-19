@@ -22,6 +22,7 @@
 </div>
 <div class="mob-more-menu" id="mob-more-menu">
   <button class="mob-more-item" id="mob-more-tutorial"><i class="ti ti-help-circle"></i>사용 가이드</button>
+  <button class="mob-more-item" id="mob-more-staff"><i class="ti ti-user-cog"></i>구좌 담당자</button>
   <button class="mob-more-item" id="mob-more-settings"><i class="ti ti-settings"></i>설정</button>
 </div>
 <div class="sidebar">
@@ -38,6 +39,7 @@
     <hr class="sb-div">
     <div class="abbg-lbl">ABBG 전용</div>
     <div class="ni" id="nav-review"><i class="ti ti-clipboard-check"></i>검토 · 확정<span class="nb" id="nb"></span></div>
+    <div class="ni" id="nav-staff"><i class="ti ti-user-cog"></i>구좌 담당자</div>
     <div class="ni" id="nav-settings"><i class="ti ti-settings"></i>설정</div>
   </div>
 </div>
@@ -71,6 +73,7 @@
               <option value="detail">상세페이지 / 이벤트페이지</option>
               <option value="banner">배너 / 광고소재</option>
               <option value="package">패키지 / 목업</option>
+              <option value="exportpkg">[수출] 패키지</option>
               <option value="sns">SNS 콘텐츠</option>
               <option value="print">인쇄물 / 오프라인</option>
               <option value="edit">수정 / 보완</option>
@@ -115,22 +118,9 @@
           <span class="wk-lbl" id="wk-lbl"></span>
           <button class="nav-btn" id="btn-next">다음 →</button>
         </div>
-        <div class="slot-tog">
-          <button class="stbtn a-all" id="st-all">전체</button>
-          <button class="stbtn" id="st-1">1</button>
-          <button class="stbtn" id="st-2">2</button>
-        </div>
+        <div class="slot-tog" id="slot-tog"></div>
       </div>
-      <div class="leg-row">
-        <div class="leg"><div class="leg-dot" style="background:var(--c1b);border:1px solid var(--c1m)"></div><span style="color:var(--c1d)">1</span></div>
-        <div class="leg"><div class="leg-dot" style="background:var(--c2b);border:1px solid var(--c2m)"></div><span style="color:var(--c2d)">2</span></div>
-        <div class="leg-div"></div>
-        <div class="leg"><div class="leg-dot" style="background:#C0DD97;border:1px solid #639922"></div>완료</div>
-        <div class="leg"><div class="leg-dot" style="background:var(--surface-1);border:1px dashed var(--border-stronger)"></div><span style="opacity:.6">검토 대기</span></div>
-        <div class="leg-div"></div>
-        <div class="leg"><div class="leg-dot" style="background:#fff0ee;border:1px solid #F5C4B3"></div>공휴일</div>
-        <div class="leg"><div class="leg-dot" style="background:#fff3e0;border:1px solid #F5A524"></div>⚠ 급건 캐파 초과(조율 필요)</div>
-      </div>
+      <div class="leg-row" id="leg-row"></div>
       <div class="gt-wrap"><table class="gt"><thead id="gh"></thead><tbody id="gb"></tbody></table></div>
     </div>
 
@@ -225,6 +215,16 @@
         <div class="pw-f"><span class="lbl">새 비밀번호 확인</span><input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" id="pw-cf" placeholder="다시 입력"></div>
         <button class="pw-sub" id="pw-submit">변경하기</button>
         <div class="pw-msg" id="pw-msg"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-staff">
+      <div class="pg-hd"><div class="pg-title">구좌 담당자 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div><div class="pg-sub">ABBG 내부 구좌 담당자를 관리해요. 추가·삭제하면 스케줄 필터·범례·구좌 배정 목록에 바로 반영돼요.</div></div>
+      <div class="mg-box" style="max-width:420px;">
+        <div class="mg-ttl"><i class="ti ti-user-cog"></i>담당자 목록</div>
+        <div class="chip-grid" id="sgrid"></div>
+        <div class="add-row"><input type="text" id="new-staff" placeholder="이름 입력"><button class="add-btn" id="btn-add-staff">+ 추가</button></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.5;">진행 중인 작업에 배정된 담당자를 삭제하면 해당 작업의 구좌 표시는 유지되지만, 필터·범례·구좌 배정 목록에서는 빠져요.</p>
       </div>
     </div>
 
@@ -330,6 +330,7 @@ const TI = {
   detail:{name:'상세페이지/이벤트페이지',days:'3~4일',minDays:3,ex:['올리브영 상세','스마트스토어','이벤트 랜딩','브랜드 기획전'],note:'분량에 따라 달라요. 자료 검토 후 일정 확정 안내드려요.'},
   banner:{name:'배너/광고소재',days:'1~2일',minDays:1,ex:['네이버 GFA','카카오 배너','아마존 판넬','SNS 광고'],note:'사이즈 바리에이션 많으면 추가 시간이 필요해요.'},
   package:{name:'패키지/목업',days:'2~3일',minDays:2,ex:['단상자','라벨 수정','목업 합성','쇼핑백'],note:'인쇄용은 규격·도무송 확인 후 착수해요.'},
+  exportpkg:{name:'[수출] 패키지',days:'2~4일',minDays:2,ex:['수출용 단상자','해외 라벨','수출 스티커','다국어 패키지'],note:'국가별 표기 규정 확인 후 착수해요. 리드타임이 더 필요할 수 있어요.'},
   sns:{name:'SNS 콘텐츠',days:'1~2일',minDays:1,ex:['인스타 피드','카드뉴스','릴스 썸네일','카카오 채널'],note:'시리즈물은 한 번에 묶어서 요청해주세요.'},
   print:{name:'인쇄물/오프라인',days:'2~3일',minDays:2,ex:['엑스배너','리플렛','현수막','안내지'],note:'인쇄소 납기 있으면 최소 3영업일 전에 요청 주세요.'},
   edit:{name:'수정/보완',days:'당일~1일',minDays:0,ex:['텍스트 수정','이미지 교체','사이즈 변경','색상 조정'],note:'원본 파일 드라이브 경로도 알려주시면 빠르게 처리돼요.'},
@@ -375,11 +376,26 @@ function suggestDate(dateStr, type, excludeId) {
   return null;
 }
 const DN = ['월','화','수','목','금'];
-const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',settings:'설정',lock:'ABBG 전용'};
-const TABS = ['form','requests','schedule','people','tutorial','review','settings','lock'];
+const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',staff:'구좌 담당자',settings:'설정',lock:'ABBG 전용'};
+const TABS = ['form','requests','schedule','people','tutorial','review','staff','settings','lock'];
+
+// ── 구좌(우리측 담당자) 색상 팔레트 ──
+// staff 테이블의 담당자 수는 늘어나거나 줄어들 수 있어서, 고정된 CSS 클래스(.sb1/.sb2 등) 대신
+// id 기반으로 팔레트를 순환시켜 인라인 스타일로 색을 입힘. 팔레트 길이를 넘으면 색이 순환되어 재사용됨.
+const SLOT_PALETTE = [
+  {b:'#E1F5EE',m:'#9FE1CB',d:'#085041',c:'#1D9E75'},
+  {b:'#FAECE7',m:'#F5C4B3',d:'#712B13',c:'#D85A30'},
+  {b:'#EEF6FF',m:'#B5D4F4',d:'#0C447C',c:'#378ADD'},
+  {b:'#F5EEFF',m:'#D9C6F7',d:'#4B1F82',c:'#8B5CF6'},
+  {b:'#FFF6E0',m:'#F5D98B',d:'#7A5200',c:'#E0A83E'},
+  {b:'#EAFBF0',m:'#A8E6BE',d:'#1B5E33',c:'#3FAE64'},
+];
+const slotColor = id => SLOT_PALETTE[Math.abs((Number(id)||0)-1) % SLOT_PALETTE.length];
+const slotIdx = id => { const i = staff.findIndex(s=>String(s.id)===String(id)); return i>=0?i+1:null; };
+const slotName = id => { const s = staff.find(x=>String(x.id)===String(id)); return s?s.name:''; };
 
 let wkOff=0, slotF='all', fPri='', unlocked=false, pTarget='';
-let tasks=[], pending=[], people=[], offDays=[];
+let tasks=[], pending=[], people=[], offDays=[], staff=[];
 let taskFilter='active'; // 'active' | 'done' | 'all' — 확정된 작업 목록 필터(요청 현황 · 검토 탭 공용)
 const filterTasks = list => taskFilter==='active' ? list.filter(t=>!t.done) : taskFilter==='done' ? list.filter(t=>t.done) : list;
 function dnTogHtml() {
@@ -407,7 +423,12 @@ const isPast = s => s < TODAY;
 const gOL = s => HOL[s]||(offDays.includes(s)?'회사 휴무':'');
 const nWD = s => {const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+1);while(isO(fmt(d)))d.setDate(d.getDate()+1);return fmt(d);};
 const wdB = (a,b) => {let c=0,d=new Date(a+'T00:00:00');const e=new Date(b+'T00:00:00');while(d<e){if(!isO(fmt(d)))c++;d.setDate(d.getDate()+1);}return c;};
-const sBadge = s => s==='1'?`<span class="sb1"><span class="d1"></span>1</span>`:s==='2'?`<span class="sb2"><span class="d2"></span>2</span>`:`<span class="sb-etc">${s||'-'}</span>`;
+const sBadge = s => {
+  const idx = s?slotIdx(s):null;
+  if(idx===null) return `<span class="sb-etc">${esc(s||'-')}</span>`;
+  const c = slotColor(s);
+  return `<span class="sb-dyn" style="background:${c.b};color:${c.d};border:1px solid ${c.m};" title="${esc(slotName(s))}"><span class="d-dyn" style="background:${c.c};"></span>${idx}</span>`;
+};
 const priBadge = p => p==='urgent'?`<span class="bpri b-urg">급건</span>`:p==='low'?`<span class="bpri b-low">여유</span>`:`<span class="bpri b-nrm">일반</span>`;
 let __toastTimer = null;
 const showT = (msg, opts) => {
@@ -460,13 +481,14 @@ function showLoadError(msg) {
   bar.textContent = '⚠ ' + msg;
 }
 async function loadAll() {
-  let t, p, pe, o;
+  let t, p, pe, o, st;
   try {
-    [t, p, pe, o] = await Promise.all([
+    [t, p, pe, o, st] = await Promise.all([
       sb.from('tasks').select('*').order('created_at'),
       sb.from('people').select('*').order('id'),
       sb.from('pending').select('*').order('created_at'),
-      sb.from('off_days').select('*').order('date')
+      sb.from('off_days').select('*').order('date'),
+      sb.from('staff').select('*').order('id')
     ]);
   } catch (e) {
     showLoadError('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 새로고침해주세요.');
@@ -474,7 +496,7 @@ async function loadAll() {
   }
   // 쿼리 중 하나라도 실패하면 '데이터 없음'으로 착각하지 않도록 여기서 멈추고 에러를 보여줌
   // (예전엔 실패 시 조용히 빈 배열 처리되면서 시드 데이터가 중복 삽입될 수 있었음)
-  const err = t.error || p.error || pe.error || o.error;
+  const err = t.error || p.error || pe.error || o.error || st.error;
   if(err) {
     showLoadError('데이터를 불러오지 못했어요: ' + err.message + ' — 새로고침해서 다시 시도해주세요.');
     return;
@@ -483,16 +505,26 @@ async function loadAll() {
   people = (p.data||[]).map(r=>r.name);
   pending = (pe.data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,type:r.type,due:r.due,priority:r.priority,desc:r.description,regAt:r.reg_at}));
   offDays = (o.data||[]).map(r=>r.date);
+  staff = (st.data||[]).map(r=>({id:r.id,name:r.name}));
   // 초기 데이터 없으면 기본값 삽입
   if(people.length===0) await seedPeople();
+  if(staff.length===0) await seedStaff();
   if(tasks.length===0) await seedTasks();
-  renderP(); renderO(); updB();
+  renderP(); renderO(); renderStaff(); renderSlotTog(); renderLegend(); updB();
 }
 
 async function seedPeople() {
   const names = ['송경진','한유정','김은채','정자윤','김도연','은균','세별','Nahwa','이수연','하영','전웅기'];
   await sb.from('people').insert(names.map(name=>({name})));
   people = names;
+}
+
+// 구좌1=권효진 · 구좌2=김효진으로 이어져온 기존 스케줄 데이터(tasks.slot='1'/'2')와 그대로 맞도록,
+// 처음 한 번만 이 순서 그대로 insert해서 id 1,2가 배정되게 함(신규 테이블 기준).
+async function seedStaff() {
+  const names = ['권효진','김효진'];
+  const {data} = await sb.from('staff').insert(names.map(name=>({name}))).select();
+  staff = (data||[]).map(r=>({id:r.id,name:r.name}));
 }
 
 async function seedTasks() {
@@ -526,8 +558,9 @@ function sw(tab) {
   const mpg=document.getElementById('mpg'); if(mpg) mpg.textContent=PAGES[tab]||'';
   if(tab==='review') { renderRev(); renderRevSchedule(); }
   if(tab==='requests') renderReqList();
-  if(tab==='schedule') renderG();
+  if(tab==='schedule') { renderSlotTog(); renderLegend(); renderG(); }
   if(tab==='people') {renderP(); renderO();}
+  if(tab==='staff') renderStaff();
 }
 function swA(tab) {
   if(unlocked){sw(tab);return;}
@@ -543,6 +576,7 @@ document.getElementById('nav-schedule').onclick = () => sw('schedule');
 document.getElementById('nav-people').onclick = () => sw('people');
 document.getElementById('nav-tutorial').onclick = () => sw('tutorial');
 document.getElementById('nav-review').onclick = () => swA('review');
+document.getElementById('nav-staff').onclick = () => swA('staff');
 document.getElementById('nav-settings').onclick = () => swA('settings');
 document.getElementById('go-people').onclick = () => sw('people');
 document.getElementById('req-due').onchange = () => {onDue(); runC();};
@@ -562,12 +596,11 @@ document.getElementById('lock-pw').onkeydown = e => {if(e.key==='Enter') tryU();
 });
 document.getElementById('btn-prev').onclick = () => {wkOff--; renderG();};
 document.getElementById('btn-next').onclick = () => {wkOff++; renderG();};
-document.getElementById('st-all').onclick = () => setSl('all');
-document.getElementById('st-1').onclick = () => setSl('1');
-document.getElementById('st-2').onclick = () => setSl('2');
 document.getElementById('btn-add-person').onclick = addP;
 document.getElementById('new-person').onkeydown = e => {if(e.key==='Enter') addP();};
 document.getElementById('btn-add-off').onclick = addO;
+document.getElementById('btn-add-staff').onclick = addStaff;
+document.getElementById('new-staff').onkeydown = e => {if(e.key==='Enter') addStaff();};
 document.getElementById('pw-submit').onclick = chPw;
 function closeModal(){document.getElementById('modal-bg').classList.remove('show');}
 document.getElementById('modal-close2').onclick = closeModal;
@@ -584,6 +617,7 @@ document.getElementById('mob-more-btn').onclick = (e) => {
   document.getElementById('mob-more-menu').classList.toggle('show');
 };
 document.getElementById('mob-more-tutorial').onclick = () => { document.getElementById('mob-more-menu').classList.remove('show'); sw('tutorial'); };
+document.getElementById('mob-more-staff').onclick = () => { document.getElementById('mob-more-menu').classList.remove('show'); swA('staff'); };
 document.getElementById('mob-more-settings').onclick = () => { document.getElementById('mob-more-menu').classList.remove('show'); swA('settings'); };
 document.addEventListener('click', (e) => {
   const menu = document.getElementById('mob-more-menu'), btn = document.getElementById('mob-more-btn');
@@ -1039,16 +1073,18 @@ function renderRevSchedule() {
   } else {
     visible.forEach(t => {
       const si = ds.indexOf(t.start), di = ds.indexOf(t.due);
-      const is1 = t.slot==='1';
-      const barDue = t.done?'bar-done':is1?'bar-s1':'bar-s2';
-      const barDim = is1?'bar-s1d':'bar-s2d';
-      const btCls = t.done?'bt-done':is1?'bt-s1':'bt-s2';
+      const clr = slotColor(t.slot);
+      const barDueCls = t.done?'bar-done':'';
+      const barDueStyle = t.done ? ' style="height:14px;"' : ` style="height:14px;background:${clr.m};border:1px solid ${clr.c};"`;
+      const barDimStyle = ` style="height:14px;background:${clr.b};border:1px solid ${clr.m};"`;
+      const btCls = t.done?'bt-done':'';
+      const btStyle = t.done ? ' style="font-size:8px;"' : ` style="font-size:8px;color:${clr.d};"`;
       let cells = '';
       ds.forEach((_,i) => {
         const off = isO(ds[i]); const hc = off?' hol':'';
         const inR = si>=0&&di>=0&&i>=si&&i<di;
-        if(i===di&&di>=0) cells += `<td class="dc${hc}"><div class="bw"><div class="bar ${barDue}" style="height:14px;"><span class="bt ${btCls}" style="font-size:8px;">${t.done?'완료':'마감'}</span></div></div></td>`;
-        else if(inR) cells += `<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}" style="height:14px;"></div></div></td>`;
+        if(i===di&&di>=0) cells += `<td class="dc${hc}"><div class="bw"><div class="bar ${barDueCls}"${barDueStyle}><span class="bt ${btCls}"${btStyle}>${t.done?'완료':'마감'}</span></div></div></td>`;
+        else if(inR) cells += `<td class="dc${hc}"><div class="bw"><div class="bar"${barDimStyle}></div></div></td>`;
         else cells += `<td class="dc${hc}"><div class="bw"></div></td>`;
       });
       const dayOverload = t.priority==='urgent' && !t.done && urgentDueOn(t.due).length >= CAP_FRIENDLY_MAX;
@@ -1096,7 +1132,7 @@ function renderRev() {
         <div class="pend-f pend-ff"><div class="pend-fl">요청 내용</div><div class="pend-fv" style="white-space:pre-wrap;line-height:1.5">${esc(p.desc)||'—'}</div></div>
       </div>
       <div class="rc-asgn">
-        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:11px;padding:5px 8px;"><option value="">선택</option><option value="1">1</option><option value="2">2</option></select></div>
+        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:11px;padding:5px 8px;"><option value="">선택</option>${staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
         <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}" style="font-size:11px;padding:5px 8px;"></div>
         <div><div class="rc-al">시작일 (자동, 수정 가능)</div><input type="date" id="cstart-${p.id}" max="${p.due}" style="font-size:11px;padding:5px 8px;"></div>
       </div>
@@ -1256,6 +1292,47 @@ async function rmP(i) {
   if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return; }
   people.splice(i,1); renderP(); showT(n+' 삭제됐어요.');
 }
+// ── 구좌 담당자 (ABBG 전용 — 추가/삭제하면 스케줄 필터·범례·구좌 배정 목록에 바로 반영돼요) ──
+function renderStaff() {
+  const el = document.getElementById('sgrid');
+  if(!el) return;
+  el.innerHTML = staff.length===0
+    ? '<span style="font-size:11px;color:var(--text-muted)">등록된 담당자 없음</span>'
+    : staff.map(s=>{
+        const c = slotColor(s.id);
+        return `<div class="chip" style="background:${c.b};border-color:${c.m};color:${c.d};">${esc(s.name)}<button class="chip-x" data-id="${s.id}" type="button" style="border-color:${c.d};color:${c.d};">×</button></div>`;
+      }).join('');
+  el.querySelectorAll('.chip-x').forEach(btn=>btn.onclick=()=>rmStaff(+btn.dataset.id));
+}
+async function addStaff() {
+  const inp=document.getElementById('new-staff'); const n=inp.value.trim();
+  if(!n) return; if(staff.some(s=>s.name===n)){showT('이미 있는 담당자예요!'); return;}
+  const btn=document.getElementById('btn-add-staff');
+  btn.disabled=true;
+  try {
+    const { data, error } = await sb.from('staff').insert([{name:n}]).select();
+    if(error){ showT('추가 실패: '+error.message+' — 다시 시도해주세요.'); return; }
+    staff.push({id:data[0].id,name:n}); inp.value='';
+    renderStaff(); renderSlotTog(); renderLegend(); renderG();
+    showT(n+' 추가됐어요!');
+  } finally {
+    btn.disabled=false;
+  }
+}
+async function rmStaff(id) {
+  const s = staff.find(x=>x.id===id); if(!s) return;
+  const inUse = tasks.some(t=>!t.done && String(t.slot)===String(id));
+  const msg = inUse
+    ? `"${s.name}" 담당자는 진행 중인 작업에 배정돼 있어요. 그래도 삭제할까요?\n(기존 작업의 구좌 표시는 유지되지만 목록·필터에서는 빠져요)`
+    : `"${s.name}" 담당자를 삭제할까요?`;
+  if(!(await confirmDanger(msg, {title:'담당자 삭제'}))) return;
+  const { error } = await sb.from('staff').delete().eq('id',id);
+  if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return; }
+  staff.splice(staff.indexOf(s),1);
+  if(slotF===String(id)) slotF='all';
+  renderStaff(); renderSlotTog(); renderLegend(); renderG();
+  showT(s.name+' 삭제됐어요.');
+}
 function renderO() {
   document.getElementById('offgrid').innerHTML=offDays.length===0
     ?'<span style="font-size:11px;color:var(--text-muted)">등록된 휴무일 없음</span>'
@@ -1289,10 +1366,37 @@ function getWD(off) {
 }
 function setSl(s) {
   slotF=s;
-  document.getElementById('st-all').className='stbtn'+(s==='all'?' a-all':'');
-  document.getElementById('st-1').className='stbtn'+(s==='1'?' a-1':'');
-  document.getElementById('st-2').className='stbtn'+(s==='2'?' a-2':'');
+  renderSlotTog();
   renderG();
+}
+// 구좌 필터 버튼(전체 + 담당자별) — staff 배열이 바뀔 때마다 다시 그림
+function renderSlotTog() {
+  const el = document.getElementById('slot-tog');
+  if(!el) return;
+  let html = `<button class="stbtn${slotF==='all'?' a-all':''}" data-s="all" type="button">전체</button>`;
+  staff.forEach(s=>{
+    const c = slotColor(s.id);
+    const active = slotF===String(s.id);
+    html += `<button class="stbtn" data-s="${s.id}" type="button" style="${active?`background:${c.b};color:${c.d};`:''}">${esc(s.name)}</button>`;
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.stbtn').forEach(btn=>{ btn.onclick = () => setSl(btn.dataset.s); });
+}
+// 범례 — 담당자별 색상 + 완료/검토대기/공휴일/급건 캐파 초과 표시
+function renderLegend() {
+  const el = document.getElementById('leg-row');
+  if(!el) return;
+  let html = staff.map(s=>{
+    const c = slotColor(s.id);
+    return `<div class="leg"><div class="leg-dot" style="background:${c.b};border:1px solid ${c.m}"></div><span style="color:${c.d}">${esc(s.name)}</span></div>`;
+  }).join('');
+  html += `<div class="leg-div"></div>
+    <div class="leg"><div class="leg-dot" style="background:#C0DD97;border:1px solid #639922"></div>완료</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--surface-1);border:1px dashed var(--border-stronger)"></div><span style="opacity:.6">검토 대기</span></div>
+    <div class="leg-div"></div>
+    <div class="leg"><div class="leg-dot" style="background:#fff0ee;border:1px solid #F5C4B3"></div>공휴일</div>
+    <div class="leg"><div class="leg-dot" style="background:#fff3e0;border:1px solid #F5A524"></div>⚠ 급건 캐파 초과(조율 필요)</div>`;
+  el.innerHTML = html;
 }
 function renderG() {
   const days=getWD(wkOff); const ts=TODAY;
@@ -1311,14 +1415,18 @@ function renderG() {
   document.getElementById('gb').innerHTML=!allRows.length
     ?`<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:12px">이 주차에 작업이 없어요</td></tr>`
     :allRows.map(t=>{
-      const si=ds.indexOf(t.start), di=ds.indexOf(t.due), is1=t.slot==='1';
-      const barDue=t.done?'bar-done':t.isPend?'bar-pend':is1?'bar-s1':'bar-s2';
-      const barDim=t.isPend?'bar-pend':is1?'bar-s1d':'bar-s2d';
-      const btCls=t.done?'bt-done':t.isPend?'bt-p':is1?'bt-s1':'bt-s2';
+      const si=ds.indexOf(t.start), di=ds.indexOf(t.due);
+      const clr=slotColor(t.slot);
+      const barDueCls=t.done?'bar-done':t.isPend?'bar-pend':'';
+      const barDueStyle=(!t.done&&!t.isPend)?` style="background:${clr.m};border:1px solid ${clr.c};"`:'';
+      const barDimCls=t.isPend?'bar-pend':'';
+      const barDimStyle=!t.isPend?` style="background:${clr.b};border:1px solid ${clr.m};"`:'';
+      const btCls=t.done?'bt-done':t.isPend?'bt-p':'';
+      const btStyle=(!t.done&&!t.isPend)?` style="color:${clr.d};"`:'';
       const lbl=t.done?'완료':t.isPend?'검토중':'마감';
       const cells=ds.map((_,i)=>{const off=isO(ds[i]); const hc=off?' hol':''; const inR=si>=0&&di>=0&&i>=si&&i<di;
-        if(i===di&&di>=0) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDue}"><span class="bt ${btCls}">${lbl}</span></div></div></td>`;
-        if(inR) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDim}"></div></div></td>`;
+        if(i===di&&di>=0) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDueCls}"${barDueStyle}><span class="bt ${btCls}"${btStyle}>${lbl}</span></div></div></td>`;
+        if(inR) return`<td class="dc${hc}"><div class="bw"><div class="bar ${barDimCls}"${barDimStyle}></div></div></td>`;
         return`<td class="dc${hc}"><div class="bw"></div></td>`;
       }).join('');
       const dayOverload = t.priority==='urgent' && !t.done && urgentDueOn(t.due).length>=CAP_FRIENDLY_MAX;
@@ -1396,6 +1504,12 @@ function setupRealtime() {
     if(payload.eventType==='DELETE') { const idx=offDays.indexOf(payload.old.date); if(idx>=0) offDays.splice(idx,1); }
     else if(!offDays.includes(payload.new.date)) offDays.push(payload.new.date);
     renderO(); renderG();
+  }).subscribe();
+
+  sb.channel('rt-staff').on('postgres_changes', {event:'*', schema:'public', table:'staff'}, payload => {
+    if(payload.eventType==='DELETE') removeLocalById(staff, payload.old.id);
+    else upsertLocal(staff, payload.new, r=>({id:r.id,name:r.name}));
+    renderStaff(); renderSlotTog(); renderLegend(); renderG(); renderRev(); renderRevSchedule();
   }).subscribe();
 }
 
