@@ -29,11 +29,11 @@ body{background:#f8fafc;min-height:100vh;}
 .abbg-lbl::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--c1);}
 /* ── 메인 ── */
 .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;background:#f8fafc;}
-.content{flex:1;padding:24px 32px;background:#f8fafc;}
-.page{display:none;max-width:860px;}
-.page.active{display:block;max-width:860px;}
+.content{flex:1;padding:28px 32px;background:#f8fafc;}
+.page{display:none;max-width:860px;margin:0 auto;}
+.page.active{display:block;max-width:860px;margin:0 auto;}
 /* ── 페이지 헤더 ── */
-.pg-hd{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.pg-hd{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
 .pg-title{font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em;}
 .pg-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
 /* ── 카드 ── */
@@ -347,10 +347,6 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .sb-bottom{padding:6px 6px 10px;border-top:1px solid var(--border);flex-shrink:0;}
 .sb-bottom-lbl{font-size:9.5px;font-weight:700;color:var(--text-muted);letter-spacing:.07em;text-transform:uppercase;padding:4px 10px 5px;display:block;}
 
-/* ── 상단 topbar ── */
-.topbar{height:48px;flex-shrink:0;background:#ffffff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:40;}
-.topbar-left{font-size:14px;font-weight:600;color:var(--text-primary);}
-.topbar-right{display:flex;align-items:center;gap:8px;}
 
 /* ── 알림 버튼 ── */
 .notif-wrap{position:relative;}
@@ -381,8 +377,31 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .notif-msg b{font-weight:700;}
 .notif-time{font-size:11px;color:var(--text-muted);margin-top:2px;}
 
-#page-schedule{max-width:1100px;}
+#page-schedule{max-width:1100px;margin:0 auto;}
+#page-review{max-width:1080px;margin:0 auto;}
 
 /* ── 이름 클릭 수정 ── */
 .chip-name{border-radius:3px;transition:background .12s;}
 .chip-name:hover{text-decoration:underline;text-underline-offset:2px;opacity:.75;}
+
+/* ── 사이드바 로고+알림 ── */
+.sb-logo-row{display:flex;align-items:center;justify-content:space-between;}
+.sb-notif-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface-1);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;color:var(--text-muted);transition:all .15s;flex-shrink:0;}
+.sb-notif-btn:hover{background:var(--border);color:var(--text-primary);}
+.sb-notif-btn i{font-size:14px;}
+
+/* notif-drop: fixed positioning */
+#notif-drop{position:fixed;top:60px;left:14px;width:300px;}
+
+/* ── 검토·확정 2컬럼 레이아웃 ── */
+.rev-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start;}
+.rev-left{display:flex;flex-direction:column;gap:0;}
+.rev-right{display:flex;flex-direction:column;gap:0;}
+.rev-section-hd{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px;}
+.rev-section-hd i{font-size:14px;color:var(--text-muted);}
+.rev-section-hd .nb{margin-left:4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--c2);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;}
+.rev-section-hd .nb.show{display:flex;}
+
+@media(max-width:900px){
+  .rev-layout{grid-template-columns:1fr;}
+}
