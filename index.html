@@ -1300,9 +1300,32 @@ function renderStaff() {
     ? '<span style="font-size:11px;color:var(--text-muted)">등록된 담당자 없음</span>'
     : staff.map(s=>{
         const c = slotColor(s.id);
-        return `<div class="chip" style="background:${c.b};border-color:${c.m};color:${c.d};">${esc(s.name)}<button class="chip-x" data-id="${s.id}" type="button" style="border-color:${c.d};color:${c.d};">×</button></div>`;
+        return `<div class="chip" data-staff-id="${s.id}" style="background:${c.b};border-color:${c.m};color:${c.d};">${esc(s.name)}<button class="chip-edit" data-id="${s.id}" type="button" title="이름 수정" style="color:${c.d};opacity:.7;background:none;border:none;cursor:pointer;padding:0 2px 0 5px;font-size:12px;line-height:1;">✏</button><button class="chip-x" data-id="${s.id}" type="button" style="border-color:${c.d};color:${c.d};">×</button></div>`;
       }).join('');
+  el.querySelectorAll('.chip-edit').forEach(btn=>btn.onclick=()=>startRenameStaff(+btn.dataset.id));
   el.querySelectorAll('.chip-x').forEach(btn=>btn.onclick=()=>rmStaff(+btn.dataset.id));
+}
+function startRenameStaff(id) {
+  const s = staff.find(x=>x.id===id); if(!s) return;
+  const chip = document.querySelector(`#sgrid [data-staff-id="${id}"]`); if(!chip) return;
+  const c = slotColor(id);
+  chip.innerHTML = `<input class="chip-rename-input" value="${esc(s.name)}" maxlength="20" style="background:transparent;border:none;outline:none;color:${c.d};font-size:12px;font-weight:600;width:80px;font-family:inherit;"><button class="chip-rename-ok" data-id="${id}" type="button" title="저장" style="color:${c.d};background:none;border:none;cursor:pointer;padding:0 2px;font-size:12px;">✓</button><button class="chip-rename-cancel" data-id="${id}" type="button" title="취소" style="color:${c.d};opacity:.6;background:none;border:none;cursor:pointer;padding:0 2px;font-size:12px;">✕</button>`;
+  const inp = chip.querySelector('.chip-rename-input');
+  inp.focus(); inp.select();
+  chip.querySelector('.chip-rename-ok').onclick = () => renameStaff(id, inp.value.trim());
+  chip.querySelector('.chip-rename-cancel').onclick = () => renderStaff();
+  inp.onkeydown = e => { if(e.key==='Enter') renameStaff(id, inp.value.trim()); if(e.key==='Escape') renderStaff(); };
+}
+async function renameStaff(id, newName) {
+  const s = staff.find(x=>x.id===id); if(!s) return;
+  if(!newName){ showT('이름을 입력해주세요.'); return; }
+  if(newName===s.name){ renderStaff(); return; }
+  if(staff.some(x=>x.id!==id && x.name===newName)){ showT('이미 있는 담당자 이름이에요!'); return; }
+  const { error } = await sb.from('staff').update({name:newName}).eq('id',id);
+  if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
+  s.name = newName;
+  renderStaff(); renderSlotTog(); renderLegend(); renderG();
+  showT(newName+'으로 수정됐어요!');
 }
 async function addStaff() {
   const inp=document.getElementById('new-staff'); const n=inp.value.trim();
