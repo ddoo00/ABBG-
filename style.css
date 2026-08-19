@@ -408,7 +408,8 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .modal-btn-done:hover{border-color:var(--c1);color:var(--c1d);}
 .modal-btn-del{padding:8px 16px;background:var(--surface-1);border:1px solid #fca5a5;border-radius:7px;font-size:13px;font-weight:600;color:#991b1b;cursor:pointer;}
 .modal-btn-del:hover{background:#fef2f2;}
-.modal-ft{padding:14px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;}
+.modal-ft{padding:12px 18px;border-top:1px solid var(--border);}
+.modal-ft-inner{display:flex;align-items:center;justify-content:flex-end;gap:10px;}
 
 /* ── 검토·확정 섹션 박스 ── */
 .rev-box{background:var(--surface-0);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);}
