@@ -288,7 +288,7 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 /* ── 모달 ── */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
 .modal-bg.show{display:flex;}
-.modal{background:var(--surface-0);border-radius:12px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.15);}
+.modal{background:var(--surface-0);border-radius:12px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.15);}
 .modal-hd{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-size:15px;font-weight:700;color:var(--text-primary);}
 .modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-muted);line-height:1;padding:2px 6px;}
@@ -409,7 +409,7 @@ input::placeholder,textarea::placeholder{font-size:12px;color:#9ca3af;}
 .modal-btn-del{padding:8px 16px;background:var(--surface-1);border:1px solid #fca5a5;border-radius:7px;font-size:13px;font-weight:600;color:#991b1b;cursor:pointer;}
 .modal-btn-del:hover{background:#fef2f2;}
 .modal-ft{padding:12px 18px;border-top:1px solid var(--border);}
-.modal-ft-inner{display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+.modal-ft-inner{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 
 /* ── 검토·확정 섹션 박스 ── */
 .rev-box{background:var(--surface-0);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);}
