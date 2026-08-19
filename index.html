@@ -269,6 +269,25 @@
   </div>
 </div>
 
+<div class="modal-bg" id="rename-bg" style="z-index:310;">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-hd">
+      <div class="modal-title">담당자 이름 수정</div>
+      <button class="modal-close" id="rename-close">×</button>
+    </div>
+    <div class="modal-bd" style="gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">새 이름</label>
+        <input type="text" id="rename-input" maxlength="20" placeholder="이름 입력" style="font-size:14px;padding:10px 12px;">
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-modal-close" id="rename-cancel">취소</button>
+      <button class="btn-modal-edit" id="rename-ok">저장</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1124,18 +1143,26 @@ function renderRev() {
   if(!pending.length){pEl.innerHTML=`<div style="font-size:11px;color:var(--text-muted);padding:6px 0">대기 중인 요청이 없어요</div>`;}
   else {
     pEl.innerHTML=pending.map(p=>{const ti=TI[p.type]||{}; return`<div class="pend-card" id="pc-${p.id}">
-      <div class="pend-hd" data-preview="${p.id}" style="cursor:pointer;"><div><div class="pend-nm">${esc(p.name)}</div><div class="pend-mt">요청자 ${esc(p.sub)} · 희망 납기 ${p.due.replace(/-/g,'.')} · ${p.regAt}</div></div>${priBadge(p.priority)}</div>
+      <div class="pend-hd" data-preview="${p.id}" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <div style="flex:1;min-width:0;">
+            <div class="pend-nm">${esc(p.name)}</div>
+            <div class="pend-mt">요청자 ${esc(p.sub)} · ${p.regAt}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">${priBadge(p.priority)}<span class="req-status pend-status">검토 대기</span></div>
+      </div>
       <div class="pend-bd">
-        <div class="pend-f"><div class="pend-fl">작업 유형</div><div class="pend-fv">${ti.name||p.type}${ti.days?' ('+ti.days+')':''}</div></div>
+        <div class="pend-f"><div class="pend-fl">작업 유형</div><div class="pend-fv">${ti.name||p.type}${ti.days?' <span style=\"font-size:11px;color:var(--text-muted)\">('+ti.days+')</span>':''}</div></div>
         <div class="pend-f"><div class="pend-fl">희망 납기</div><div class="pend-fv">${p.due.replace(/-/g,'.')}</div></div>
-        <div class="pend-f pend-ff"><div class="pend-fl">요청 내용</div><div class="pend-fv" style="white-space:pre-wrap;line-height:1.5">${esc(p.desc)||'—'}</div></div>
+        <div class="pend-f pend-ff"><div class="pend-fl">요청 내용 · 드라이브 경로</div><div class="pend-fv" style="white-space:pre-wrap;line-height:1.6;font-size:12px;">${esc(p.desc)||'—'}</div></div>
       </div>
       <div class="rc-asgn">
-        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:11px;padding:5px 8px;"><option value="">선택</option>${staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
-        <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}" style="font-size:11px;padding:5px 8px;"></div>
-        <div><div class="rc-al">시작일 (자동, 수정 가능)</div><input type="date" id="cstart-${p.id}" max="${p.due}" style="font-size:11px;padding:5px 8px;"></div>
+        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}" style="font-size:12px;padding:7px 10px;"><option value="">선택</option>${staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
+        <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}" style="font-size:12px;padding:7px 10px;"></div>
+        <div><div class="rc-al">시작일 (자동, 수정 가능)</div><input type="date" id="cstart-${p.id}" max="${p.due}" style="font-size:12px;padding:7px 10px;"></div>
       </div>
-      <div class="rc-ft"><button class="btn-rj" data-id="${p.id}">반려</button><button class="btn-ap" data-id="${p.id}">✓ 승인 · 스케줄 반영</button></div>
+      <div class="rc-ft"><button class="btn-rj" data-id="${p.id}">반려</button><button class="btn-ap" data-id="${p.id}"><i class="ti ti-check"></i> 승인 · 스케줄 반영</button></div>
     </div>`;}).join('');
     pending.forEach(p=>{
       const cdue=document.getElementById('cdue-'+p.id), cstart=document.getElementById('cstart-'+p.id);
@@ -1292,6 +1319,27 @@ async function rmP(i) {
   people.splice(i,1); renderP(); showT(n+' 삭제됐어요.');
 }
 // ── 구좌 담당자 (ABBG 전용 — 추가/삭제하면 스케줄 필터·범례·구좌 배정 목록에 바로 반영돼요) ──
+let _renameTargetId = null;
+function openRenameModal(id) {
+  const s = staff.find(x=>x.id===id); if(!s) return;
+  _renameTargetId = id;
+  const inp = document.getElementById('rename-input');
+  inp.value = s.name;
+  document.getElementById('rename-bg').classList.add('show');
+  setTimeout(()=>{ inp.focus(); inp.select(); }, 80);
+}
+function closeRenameModal() {
+  document.getElementById('rename-bg').classList.remove('show');
+  _renameTargetId = null;
+}
+document.getElementById('rename-close').onclick = closeRenameModal;
+document.getElementById('rename-cancel').onclick = closeRenameModal;
+document.getElementById('rename-bg').onclick = e => { if(e.target===document.getElementById('rename-bg')) closeRenameModal(); };
+document.getElementById('rename-ok').onclick = () => renameStaff(_renameTargetId, document.getElementById('rename-input').value.trim());
+document.getElementById('rename-input').onkeydown = e => {
+  if(e.key==='Enter') renameStaff(_renameTargetId, document.getElementById('rename-input').value.trim());
+  if(e.key==='Escape') closeRenameModal();
+};
 function renderStaff() {
   const el = document.getElementById('sgrid');
   if(!el) return;
@@ -1301,30 +1349,26 @@ function renderStaff() {
         const c = slotColor(s.id);
         return `<div class="chip" data-staff-id="${s.id}" style="background:${c.b};border-color:${c.m};color:${c.d};">${esc(s.name)}<button class="chip-edit" data-id="${s.id}" type="button" title="이름 수정" style="color:${c.d};opacity:.7;background:none;border:none;cursor:pointer;padding:0 2px 0 5px;font-size:12px;line-height:1;">✏</button><button class="chip-x" data-id="${s.id}" type="button" style="border-color:${c.d};color:${c.d};">×</button></div>`;
       }).join('');
-  el.querySelectorAll('.chip-edit').forEach(btn=>btn.onclick=()=>startRenameStaff(+btn.dataset.id));
+  el.querySelectorAll('.chip-edit').forEach(btn=>btn.onclick=()=>openRenameModal(+btn.dataset.id));
   el.querySelectorAll('.chip-x').forEach(btn=>btn.onclick=()=>rmStaff(+btn.dataset.id));
-}
-function startRenameStaff(id) {
-  const s = staff.find(x=>x.id===id); if(!s) return;
-  const chip = document.querySelector(`#sgrid [data-staff-id="${id}"]`); if(!chip) return;
-  const c = slotColor(id);
-  chip.innerHTML = `<input class="chip-rename-input" value="${esc(s.name)}" maxlength="20" style="background:transparent;border:none;outline:none;color:${c.d};font-size:12px;font-weight:600;width:80px;font-family:inherit;"><button class="chip-rename-ok" data-id="${id}" type="button" title="저장" style="color:${c.d};background:none;border:none;cursor:pointer;padding:0 2px;font-size:12px;">✓</button><button class="chip-rename-cancel" data-id="${id}" type="button" title="취소" style="color:${c.d};opacity:.6;background:none;border:none;cursor:pointer;padding:0 2px;font-size:12px;">✕</button>`;
-  const inp = chip.querySelector('.chip-rename-input');
-  inp.focus(); inp.select();
-  chip.querySelector('.chip-rename-ok').onclick = () => renameStaff(id, inp.value.trim());
-  chip.querySelector('.chip-rename-cancel').onclick = () => renderStaff();
-  inp.onkeydown = e => { if(e.key==='Enter') renameStaff(id, inp.value.trim()); if(e.key==='Escape') renderStaff(); };
 }
 async function renameStaff(id, newName) {
   const s = staff.find(x=>x.id===id); if(!s) return;
   if(!newName){ showT('이름을 입력해주세요.'); return; }
-  if(newName===s.name){ renderStaff(); return; }
+  if(newName===s.name){ closeRenameModal(); return; }
   if(staff.some(x=>x.id!==id && x.name===newName)){ showT('이미 있는 담당자 이름이에요!'); return; }
-  const { error } = await sb.from('staff').update({name:newName}).eq('id',id);
-  if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
-  s.name = newName;
-  renderStaff(); renderSlotTog(); renderLegend(); renderG();
-  showT(newName+'으로 수정됐어요!');
+  const btn = document.getElementById('rename-ok');
+  btn.disabled=true; btn.textContent='저장 중...';
+  try {
+    const { error } = await sb.from('staff').update({name:newName}).eq('id',id);
+    if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
+    s.name = newName;
+    closeRenameModal();
+    renderStaff(); renderSlotTog(); renderLegend(); renderG();
+    showT(newName+'으로 수정됐어요!');
+  } finally {
+    btn.disabled=false; btn.textContent='저장';
+  }
 }
 async function addStaff() {
   const inp=document.getElementById('new-staff'); const n=inp.value.trim();
