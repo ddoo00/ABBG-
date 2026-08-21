@@ -1002,7 +1002,7 @@ function onDue() {
   }
   const tmr=nWD(due), dDay=tasks.filter(t=>!t.done&&t.due===due), wip=tasks.filter(t=>!t.done&&t.start<=due&&t.due>due), next=tasks.filter(t=>!t.done&&t.due===tmr);
   const total=dDay.length+wip.length+next.length, level=total===0?'free':total>=5?'full':'busy';
-  ph.className='due-ph ph-'+level; lbl.textContent=due.replace(/-/g,'.')+' 작업 현황'; cnt.textContent='총 '+total+'건';
+  const _dn=['일','월','화','수','목','금','토']; const _dobj=new Date(due); const _day=_dn[_dobj.getDay()]; ph.className='due-ph ph-'+level; lbl.textContent=due.replace(/-/g,'.')+'('+_day+') 작업 현황'; cnt.textContent='총 '+total+'건';
   const row=(t,dc,ic,it)=>`<div class="due-row"><div class="ddot ${dc}"></div><span class="di-nm">${esc(t.name)}</span><span class="di-sub">${esc(t.sub)}</span>${sBadge(t.slot)}<span class="ib ${ic}">${it}</span></div>`;
   let html='';
   if(dDay.length) html+=`<div class="due-slbl">마감 예정 · ${dDay.length}</div>`+dDay.map(t=>row(t,t.priority==='urgent'?'ddot-u':'ddot-n',t.priority==='urgent'?'ib-u':'ib-n',t.priority==='urgent'?'급건':'진행중')).join('');
