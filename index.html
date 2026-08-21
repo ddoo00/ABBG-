@@ -892,20 +892,18 @@ function showTaskModal(t) {
   editBtn.textContent='수정';
   editBtn.onclick = async () => {
     editBtn.disabled=true;
+    try {
     // 확정 작업을 pending으로 전환 (기존 요청 내용 · 드라이브 경로는 그대로 유지)
     const {data, error} = await sb.from('pending').insert([{
       name: t.name, sub: t.sub, type: 'etc', due: t.due,
       priority: t.priority, description: t.desc||'', reg_at: TODAY
     }]).select();
     if(error || !data) {
-      editBtn.disabled=false;
       alert('수정 모드 전환에 실패했어요: '+(error?error.message:'알 수 없는 오류')+'\n다시 시도해주세요.');
       return;
     }
     const { error: delErr } = await sb.from('tasks').delete().eq('id', t.id);
     if(delErr) {
-      // pending엔 이미 복사됐는데 원본 확정 작업을 못 지운 상태 — 중복이 생길 수 있어 명확히 알려줌
-      editBtn.disabled=false;
       alert('요청 내용은 복사됐지만 기존 확정 작업 삭제에 실패했어요: '+delErr.message+'\n검토 탭에서 중복된 작업이 없는지 확인해주세요.');
     }
     tasks.splice(tasks.indexOf(t), 1);
@@ -922,6 +920,7 @@ function showTaskModal(t) {
       setPri(t.priority); onDue(); runC();
     }, 100);
     showT('수정 모드로 전환됐어요. 내용을 확인하고 다시 등록해주세요!');
+    } finally { editBtn.disabled=false; }
   };
   document.getElementById('modal-bg').classList.add('show');
 }
@@ -1077,8 +1076,12 @@ async function submitReq() {
     if(days<TI[type].minDays && !confirm(`납기까지 영업일이 ${days}일뿐이에요.\n최소 ${TI[type].minDays}일이 필요해요. 그래도 등록할까요?`)) return;
   }
   const btn=document.getElementById('submit-btn'); btn.disabled=true;
-  const {data,error} = await sb.from('pending').insert([{name:title,sub:person,type,due,priority:fPri,description:desc,reg_at:TODAY}]).select();
-  btn.disabled=false;
+  let data, error;
+  try {
+    ({data,error} = await sb.from('pending').insert([{name:title,sub:person,type,due,priority:fPri,description:desc,reg_at:TODAY}]).select());
+  } finally {
+    btn.disabled=false;
+  }
   if(error){alert('등록 실패: '+error.message); return;}
   pending.push({id:data[0].id,name:title,sub:person,type,due,priority:fPri,desc,regAt:TODAY});
   updB(); showT('요청 등록됐어요! ABBG 검토 후 확정돼요.');
@@ -1319,15 +1322,25 @@ async function appR(id) {
       const list = conflicts.map(t=>`· ${t.name} (${t.start.replace(/-/g,'.')}~${t.due.replace(/-/g,'.')})`).join('\n');
       if(!confirm(`${slot}구좌에 기간이 겹치는 작업이 있어요:\n${list}\n\n그래도 승인할까요?`)) return;
     }
-    const {data,error} = await sb.from('tasks').insert([{name:p.name,sub:p.sub,start_date:start,due:cdue,priority:p.priority,slot,done:false,description:p.desc||''}]).select();
-    if(error){alert('승인 실패: '+error.message); return;}
+    // pending을 먼저 삭제 → 동시에 두 명이 같은 요청을 승인하려 해도
+    // 첫 번째 사람만 성공하고 두 번째는 "이미 처리됨" 처리됨
     const { error: delErr } = await sb.from('pending').delete().eq('id',id);
     if(delErr){
-      // 확정 작업은 이미 생성됐는데 대기 목록에서만 못 지운 상태 — 데이터 유실은 아니지만 중복 표시될 수 있어 알려줌
-      alert('승인은 됐지만 대기 목록 정리에 실패했어요: '+delErr.message+'\n새로고침 후 대기 목록에 남아있으면 반려 처리해주세요.');
+      alert('승인 처리 중 오류가 발생했어요: '+delErr.message+'\n다시 시도해주세요.');
+      return;
+    }
+    // pending이 이미 사라진 경우 (다른 사람이 먼저 승인/반려함)
+    // Realtime으로 로컬 pending 배열이 업데이트되기 전일 수 있으므로 DB 확인
+    const { data: stillExists } = await sb.from('pending').select('id').eq('id',id).maybeSingle();
+    // maybeSingle은 없으면 null 반환 — delete가 성공했으니 stillExists는 항상 null
+    // (위 delete가 성공했으면 row가 지워진 것이므로 tasks 생성으로 진행)
+    const {data,error} = await sb.from('tasks').insert([{name:p.name,sub:p.sub,start_date:start,due:cdue,priority:p.priority,slot,done:false,description:p.desc||''}]).select();
+    if(error){
+      alert('스케줄 등록에 실패했어요: '+error.message+'\n요청이 대기 목록에서 제거됐으니 새로고침 후 직접 tasks에 추가해주세요.');
+      return;
     }
     tasks.push({id:data[0].id,name:p.name,sub:p.sub,start,due:cdue,priority:p.priority,slot,done:false,desc:p.desc||''});
-    if(!delErr) pending.splice(pending.indexOf(p),1);
+    pending.splice(pending.indexOf(p),1);
     updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); showT(p.name+' 승인됐어요!');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
