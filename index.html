@@ -1448,16 +1448,20 @@ async function renameP(i, newName) {
   try {
     const { error } = await sb.from('people').update({name:newName}).eq('name',oldName);
     if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
+    // tasks.sub / pending.sub 도 일괄 업데이트
+    await Promise.all([
+      sb.from('tasks').update({sub:newName}).eq('sub',oldName),
+      sb.from('pending').update({sub:newName}).eq('sub',oldName)
+    ]);
+    // 로컬 배열 반영
     people[i] = newName;
+    tasks.forEach(t=>{ if(t.sub===oldName) t.sub=newName; });
+    pending.forEach(p=>{ if(p.sub===oldName) p.sub=newName; });
     closeRenamePersonModal();
-    renderP();
-    // 요청서 작성 담당자 드롭다운도 갱신
-    const sel = document.getElementById('req-person');
-    if(sel) {
-      const cur = sel.value;
-      sel.innerHTML = '<option value="">담당자 선택</option>' + people.map(p=>`<option${p===newName&&cur===oldName?' selected':p===cur?' selected':''}>${esc(p)}</option>`).join('');
-    }
-    showT(newName+'으로 수정됐어요!');
+    renderP(); renderG(); renderReqList(); renderRev(); renderRevSchedule();
+    const sel=document.getElementById('req-person');
+    if(sel){ const cur=sel.value; sel.innerHTML='<option value="">담당자 선택</option>'+people.map(p=>`<option${(p===newName&&cur===oldName)||(p===cur)?' selected':''}>${esc(p)}</option>`).join(''); }
+    showT(newName+'으로 수정됐어요! 스케줄에도 반영됐어요.');
   } finally {
     btn.disabled=false; btn.textContent='저장';
   }
@@ -1508,7 +1512,7 @@ async function renameStaff(id, newName) {
     if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     s.name = newName;
     closeRenameModal();
-    renderStaff(); renderSlotTog(); renderLegend(); renderG(); renderRevSchedule();
+    renderStaff(); renderSlotTog(); renderLegend(); renderG();
     showT(newName+'으로 수정됐어요!');
   } finally {
     btn.disabled=false; btn.textContent='저장';
