@@ -1450,7 +1450,14 @@ async function renameP(i, newName) {
     if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     people[i] = newName;
     closeRenamePersonModal();
-    renderP(); showT(newName+'으로 수정됐어요!');
+    renderP();
+    // 요청서 작성 담당자 드롭다운도 갱신
+    const sel = document.getElementById('req-person');
+    if(sel) {
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">담당자 선택</option>' + people.map(p=>`<option${p===newName&&cur===oldName?' selected':p===cur?' selected':''}>${esc(p)}</option>`).join('');
+    }
+    showT(newName+'으로 수정됐어요!');
   } finally {
     btn.disabled=false; btn.textContent='저장';
   }
@@ -1501,7 +1508,7 @@ async function renameStaff(id, newName) {
     if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     s.name = newName;
     closeRenameModal();
-    renderStaff(); renderSlotTog(); renderLegend(); renderG();
+    renderStaff(); renderSlotTog(); renderLegend(); renderG(); renderRevSchedule();
     showT(newName+'으로 수정됐어요!');
   } finally {
     btn.disabled=false; btn.textContent='저장';
