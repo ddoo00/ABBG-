@@ -1106,7 +1106,8 @@ async function renderStats() {
   Object.values(byPerson).forEach(p=>{
     p.avgLead = p.days.length ? +(p.days.reduce((a,b)=>a+b,0)/p.days.length).toFixed(1) : null;
     p.urgentRate = p.total ? Math.round(p.urgent/p.total*100) : 0;
-    p.isRisky = p.urgentRate>=30 || (p.avgLead!==null && p.avgLead<3);
+    // 주의 담당자 기준: 총 5건 이상 + (급건 비율 30% 이상 OR 평균 납기 여유 3일 미만)
+    p.isRisky = p.total >= 5 && (p.urgentRate>=30 || (p.avgLead!==null && p.avgLead<3));
   });
   const sorted = Object.values(byPerson).sort((a,b)=>b.total-a.total);
   const risky = sorted.filter(p=>p.isRisky);
@@ -1175,7 +1176,7 @@ async function renderStats() {
     <div class="rev-box" style="margin-bottom:16px;">
       <div class="rev-box-hd">
         <div class="rev-box-title"><i class="ti ti-alert-triangle" style="color:#d97706;"></i>주의 담당자</div>
-        <span style="font-size:12px;color:var(--t3);">급건 30% 이상 또는 납기 여유 3일 미만</span>
+        <span style="font-size:12px;color:var(--t3);">요청 5건 이상 · 급건 30% 이상 또는 납기 여유 3일 미만</span>
       </div>
       <div class="rev-box-body">${riskyCards}</div>
     </div>
