@@ -544,15 +544,39 @@ input::placeholder,textarea::placeholder{color:var(--t3);}
 .trash-perm{padding:6px 12px;background:#fff;border:1px solid #fca5a5;border-radius:7px;font-size:12px;font-weight:600;color:#991b1b;cursor:pointer;transition:all .15s;}
 .trash-perm:hover{background:#fef2f2;}
 
+/* ══ 통계 요약 카드 ══ */
+.stats-summary-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
+.stats-summary-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.stats-summary-card.stats-summary-warn{border-color:#fcd34d;background:#fffbeb;}
+.stats-summary-val{font-size:22px;font-weight:700;color:var(--t1);margin-bottom:4px;}
+.stats-summary-lbl{font-size:12px;color:var(--t3);}
+
+/* ══ 주의 담당자 카드 그리드 ══ */
+.stats-risky-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.stats-risky-card{background:var(--surface);border:1px solid #fcd34d;border-radius:9px;padding:14px;border-top:3px solid #f59e0b;}
+.stats-risky-name{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:8px;}
+.stats-risky-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.stats-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:9px;}
+.stats-tag-red{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;}
+.stats-tag-orange{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;}
+.stats-risky-row{display:flex;justify-content:space-between;font-size:12px;color:var(--t3);padding:3px 0;border-bottom:1px solid var(--border);}
+.stats-risky-row:last-child{border-bottom:none;}
+.stats-risky-row strong{color:var(--t1);font-weight:600;}
+
 /* ══ 통계 테이블 ══ */
-.stats-table{width:100%;border-collapse:collapse;}
-.stats-table th{font-size:11px;font-weight:700;color:var(--t3);text-align:left;padding:10px 16px;border-bottom:2px solid var(--border);background:var(--surface-sub);text-transform:uppercase;letter-spacing:.04em;}
-.stats-table td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
-.stats-table tr:last-child td{border-bottom:none;}
-.stats-table tr:hover td{background:var(--surface-sub);}
-.stats-table tr.stats-risky td{background:#fff9f0;}
-.stats-table tr.stats-risky:hover td{background:#fff3e0;}
-.stats-name{font-size:13px;font-weight:600;color:var(--t1);}
-.stats-num{font-size:13px;color:var(--t1);text-align:right;font-variant-numeric:tabular-nums;}
-.stats-rate{font-size:11px;color:var(--t3);}
-.stats-warn{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-weight:700;margin-left:6px;vertical-align:middle;}
+.stats-table2{width:100%;border-collapse:collapse;}
+.stats-table2 th{font-size:11px;font-weight:700;color:var(--t3);text-align:center;padding:10px 14px;border-bottom:2px solid var(--border);background:var(--surface-sub);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+.stats-table2 th:first-child{text-align:left;}
+.stats-table2 td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px;}
+.stats-table2 tr:last-child td{border-bottom:none;}
+.stats-table2 tr:hover td{background:var(--surface-sub);}
+.stats-table2 tr.stats-risky-row-tr td{background:#fffbeb;}
+.stats-table2 tr.stats-risky-row-tr:hover td{background:#fff3e0;}
+.stats-center{text-align:center;}
+.stats-person-cell{display:flex;align-items:center;gap:6px;}
+.stats-person-name{font-size:13px;font-weight:600;color:var(--t1);}
+.stats-badge-warn{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;white-space:nowrap;}
+.stats-badge-urgent{display:inline-block;padding:2px 8px;border-radius:9px;background:#fef2f2;color:#991b1b;font-weight:700;font-size:12px;}
+.stats-bar-wrap{display:flex;align-items:center;gap:8px;min-width:120px;}
+.stats-bar-fill{height:7px;border-radius:4px;min-width:2px;transition:width .3s;}
+.stats-bar-label{font-size:12px;color:var(--t2);font-weight:600;white-space:nowrap;}
