@@ -531,3 +531,28 @@ input::placeholder,textarea::placeholder{color:var(--t3);}
   .mob-hd{display:flex !important;}
   .mob-tb{display:flex !important;}
 }
+
+/* ══ 휴지통 아이템 ══ */
+.trash-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.trash-item:last-child{border-bottom:none;}
+.trash-item-info{flex:1;min-width:0;}
+.trash-item-name{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:3px;}
+.trash-item-meta{font-size:12px;color:var(--t3);}
+.trash-item-btns{display:flex;gap:6px;flex-shrink:0;}
+.trash-restore{padding:6px 12px;background:var(--c1b);border:1px solid var(--c1m);border-radius:7px;font-size:12px;font-weight:600;color:var(--c1d);cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;}
+.trash-restore:hover{background:var(--c1);color:#fff;}
+.trash-perm{padding:6px 12px;background:#fff;border:1px solid #fca5a5;border-radius:7px;font-size:12px;font-weight:600;color:#991b1b;cursor:pointer;transition:all .15s;}
+.trash-perm:hover{background:#fef2f2;}
+
+/* ══ 통계 테이블 ══ */
+.stats-table{width:100%;border-collapse:collapse;}
+.stats-table th{font-size:11px;font-weight:700;color:var(--t3);text-align:left;padding:10px 16px;border-bottom:2px solid var(--border);background:var(--surface-sub);text-transform:uppercase;letter-spacing:.04em;}
+.stats-table td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.stats-table tr:last-child td{border-bottom:none;}
+.stats-table tr:hover td{background:var(--surface-sub);}
+.stats-table tr.stats-risky td{background:#fff9f0;}
+.stats-table tr.stats-risky:hover td{background:#fff3e0;}
+.stats-name{font-size:13px;font-weight:600;color:var(--t1);}
+.stats-num{font-size:13px;color:var(--t1);text-align:right;font-variant-numeric:tabular-nums;}
+.stats-rate{font-size:11px;color:var(--t3);}
+.stats-warn{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-weight:700;margin-left:6px;vertical-align:middle;}
