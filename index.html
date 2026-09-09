@@ -883,10 +883,11 @@ function showPendingModal(p) {
     if(!(await confirmDanger(`"${p.name}" 요청을 취소할까요?`, {title:'요청 취소', okLabel:'취소하기'}))) return;
     cancelBtn.disabled = true;
     try {
-      const { error } = await sb.from('pending').delete().eq('id',p.id);
+      const error = await softDelete('pending', p.id);
       if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
       pending.splice(pending.indexOf(p),1);
-      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); showT('요청이 취소됐어요.');
+      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule();
+      updTrashBadge(); showT('요청이 취소됐어요. 복원이 필요하면 ABBG에 문의해주세요.');
     } finally {
       cancelBtn.disabled = false;
     }
@@ -1391,9 +1392,10 @@ async function rejR(id) {
   const apBtn=document.querySelector(`.btn-ap[data-id="${id}"]`), rjBtn=document.querySelector(`.btn-rj[data-id="${id}"]`);
   if(apBtn) apBtn.disabled=true; if(rjBtn) rjBtn.disabled=true;
   try {
-    const { error } = await sb.from('pending').delete().eq('id',id);
+    const error = await softDelete('pending', id);
     if(error){ showT('반려 실패: '+error.message+' — 다시 시도해주세요.'); return; }
-    pending.splice(idx,1); updB(); renderRev(); showT(name+' 반려됐어요.');
+    pending.splice(idx,1); updB(); renderRev(); renderReqList();
+    updTrashBadge(); showT(name+' 반려됐어요. 휴지통에서 복원할 수 있어요.');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
@@ -1634,13 +1636,14 @@ async function renderStats() {
 }
 
 async function delTask(id) {
-  if(!(await confirmDanger('삭제하면 되돌릴 수 없어요. 이 작업을 삭제할까요?', {title:'작업 삭제'}))) return false;
+  if(!(await confirmDanger('작업을 휴지통으로 이동할까요? ABBG 전용 탭에서 복원하거나 완전 삭제할 수 있어요.', {title:'작업 삭제', okLabel:'휴지통으로 이동'}))) return false;
   const idx=tasks.findIndex(x=>x.id===id); if(idx<0) return false;
   const name=tasks[idx].name;
-  const { error } = await sb.from('tasks').delete().eq('id',id);
+  const error = await softDelete('tasks', id);
   if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return false; }
   tasks.splice(idx,1); renderRev(); renderG(); renderReqList(); renderRevSchedule();
-  showT(name+' 삭제됐어요.');
+  updTrashBadge();
+  showT(name+' 휴지통으로 이동됐어요.');
   return true;
 }
 function renderP() {
