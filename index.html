@@ -46,8 +46,6 @@
     <div class="sb-bottom-lbl">ABBG 전용</div>
     <div class="ni" id="nav-review"><i class="ti ti-clipboard-check"></i>검토 · 확정<span class="nb" id="nb"></span></div>
     <div class="ni" id="nav-staff"><i class="ti ti-user-cog"></i>구좌 담당자</div>
-    <div class="ni" id="nav-trash"><i class="ti ti-trash"></i>휴지통<span class="nb" id="nb-trash"></span></div>
-    <div class="ni" id="nav-stats"><i class="ti ti-chart-bar"></i>담당자 통계</div>
     <div class="ni" id="nav-settings"><i class="ti ti-settings"></i>설정</div>
   </div>
 </div>
@@ -252,37 +250,6 @@
         </div>
         <div class="rev-box-body" id="rev-confirmed"></div>
       </div>
-    </div>
-
-    <!-- ══ 휴지통 (ABBG 전용) ══ -->
-    <div class="page" id="page-trash">
-      <div class="pg-hd">
-        <div class="pg-title">휴지통 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div>
-        <div class="pg-sub">삭제된 요청·작업을 복원하거나 완전 삭제할 수 있어요. 완전 삭제는 되돌릴 수 없어요.</div>
-      </div>
-      <div class="rev-box" style="margin-bottom:14px;">
-        <div class="rev-box-hd">
-          <div class="rev-box-title"><i class="ti ti-inbox"></i>삭제된 요청 (pending)</div>
-          <button id="trash-empty-pending" style="font-size:12px;padding:5px 12px;border:1px solid #fca5a5;border-radius:7px;background:#fff;color:#991b1b;cursor:pointer;font-weight:600;">전체 완전 삭제</button>
-        </div>
-        <div class="rev-box-body" id="trash-pending-list"><div class="rev-pending-empty">삭제된 요청이 없어요</div></div>
-      </div>
-      <div class="rev-box">
-        <div class="rev-box-hd">
-          <div class="rev-box-title"><i class="ti ti-list-check"></i>삭제된 작업 (tasks)</div>
-          <button id="trash-empty-tasks" style="font-size:12px;padding:5px 12px;border:1px solid #fca5a5;border-radius:7px;background:#fff;color:#991b1b;cursor:pointer;font-weight:600;">전체 완전 삭제</button>
-        </div>
-        <div class="rev-box-body" id="trash-tasks-list"><div class="rev-pending-empty">삭제된 작업이 없어요</div></div>
-      </div>
-    </div>
-
-    <!-- ══ 담당자 통계 (ABBG 전용) ══ -->
-    <div class="page" id="page-stats">
-      <div class="pg-hd">
-        <div class="pg-title">담당자 통계 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div>
-        <div class="pg-sub">담당자별 요청 패턴을 분석해요. 급건 비율이 높거나 납기 여유가 짧은 담당자를 확인해보세요.</div>
-      </div>
-      <div id="stats-content"></div>
     </div>
 
     <div class="page" id="page-settings">
@@ -497,8 +464,8 @@ function suggestDate(dateStr, type, excludeId) {
   return null;
 }
 const DN = ['월','화','수','목','금'];
-const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',staff:'구좌 담당자',trash:'휴지통',stats:'담당자 통계',settings:'설정',lock:'ABBG 전용'};
-const TABS = ['form','requests','schedule','people','tutorial','review','staff','trash','stats','settings','lock'];
+const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',staff:'구좌 담당자',settings:'설정',lock:'ABBG 전용'};
+const TABS = ['form','requests','schedule','people','tutorial','review','staff','settings','lock'];
 
 // ── 구좌(우리측 담당자) 색상 팔레트 ──
 // staff 테이블의 담당자 수는 늘어나거나 줄어들 수 있어서, 고정된 CSS 클래스(.sb1/.sb2 등) 대신
@@ -606,9 +573,9 @@ async function loadAll() {
   let t, p, pe, o, st;
   try {
     [t, p, pe, o, st] = await Promise.all([
-      sb.from('tasks').select('*').is('deleted_at',null).order('created_at'),
+      sb.from('tasks').select('*').order('created_at'),
       sb.from('people').select('*').order('id'),
-      sb.from('pending').select('*').is('deleted_at',null).order('created_at'),
+      sb.from('pending').select('*').order('created_at'),
       sb.from('off_days').select('*').order('date'),
       sb.from('staff').select('*').order('id')
     ]);
@@ -683,8 +650,6 @@ function sw(tab) {
   if(tab==='schedule') { renderSlotTog(); renderLegend(); renderG(); }
   if(tab==='people') {renderP(); renderO();}
   if(tab==='staff') renderStaff();
-  if(tab==='trash') renderTrash();
-  if(tab==='stats') renderStats();
 }
 function swA(tab) {
   if(unlocked){sw(tab);return;}
@@ -701,8 +666,6 @@ document.getElementById('nav-people').onclick = () => sw('people');
 document.getElementById('nav-tutorial').onclick = () => sw('tutorial');
 document.getElementById('nav-review').onclick = () => swA('review');
 document.getElementById('nav-staff').onclick = () => swA('staff');
-document.getElementById('nav-trash').onclick = () => swA('trash');
-document.getElementById('nav-stats').onclick = () => swA('stats');
 document.getElementById('nav-settings').onclick = () => swA('settings');
 document.getElementById('go-people').onclick = () => sw('people');
 document.getElementById('req-due').onchange = () => {onDue(); runC();};
@@ -883,10 +846,10 @@ function showPendingModal(p) {
     if(!(await confirmDanger(`"${p.name}" 요청을 취소할까요?`, {title:'요청 취소', okLabel:'취소하기'}))) return;
     cancelBtn.disabled = true;
     try {
-      const error = await softDelete('pending', p.id);
+      const { error } = await sb.from('pending').delete().eq('id',p.id);
       if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
       pending.splice(pending.indexOf(p),1);
-      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); showT('요청이 취소됐어요. 복원이 필요하면 ABBG에 문의해주세요.');
+      updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule(); showT('요청이 취소됐어요.');
     } finally {
       cancelBtn.disabled = false;
     }
@@ -964,243 +927,10 @@ function showTaskModal(t) {
 
 // ── 비즈니스 로직 (Supabase Auth 기반 — 콘솔에서 계정·RLS 설정을 마쳐야 실제로 잠겨요) ──
 // 새로고침해도 로그인 상태가 유지되도록, 시작할 때 기존 세션이 있는지 확인
-// ══════════════════════════════════════
-// 휴지통 & 통계 함수
-// ══════════════════════════════════════
-
-// 휴지통 뱃지 업데이트
-async function updTrashBadge() {
-  if(!unlocked) return;
-  const [tp, tt] = await Promise.all([
-    sb.from('pending').select('id', {count:'exact',head:true}).not('deleted_at','is',null),
-    sb.from('tasks').select('id', {count:'exact',head:true}).not('deleted_at','is',null)
-  ]);
-  const n = (tp.count||0) + (tt.count||0);
-  const nb = document.getElementById('nb-trash');
-  if(nb){ nb.textContent = n; nb.classList.toggle('show', n>0); }
-}
-
-// 휴지통 렌더링
-async function renderTrash() {
-  if(!unlocked) return;
-  const [tp, tt] = await Promise.all([
-    sb.from('pending').select('*').not('deleted_at','is',null).order('deleted_at', {ascending:false}),
-    sb.from('tasks').select('*').not('deleted_at','is',null).order('deleted_at', {ascending:false})
-  ]);
-
-  // pending 목록
-  const pEl = document.getElementById('trash-pending-list');
-  if(pEl) {
-    if(!tp.data || tp.data.length===0) {
-      pEl.innerHTML = '<div class="rev-pending-empty">삭제된 요청이 없어요 ✓</div>';
-    } else {
-      pEl.innerHTML = tp.data.map(p => {
-        const delAt = p.deleted_at ? new Date(p.deleted_at).toLocaleDateString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-        return `<div class="trash-item">
-          <div class="trash-item-info">
-            <div class="trash-item-name">${esc(p.name)}</div>
-            <div class="trash-item-meta">요청자 ${esc(p.sub||'')} · 희망납기 ${(p.due||'').replace(/-/g,'.')} · 삭제 ${delAt}</div>
-          </div>
-          <div class="trash-item-btns">
-            <button class="trash-restore" data-table="pending" data-id="${p.id}"><i class="ti ti-arrow-back-up"></i> 복원</button>
-            <button class="trash-perm" data-table="pending" data-id="${p.id}">완전 삭제</button>
-          </div>
-        </div>`;
-      }).join('');
-      pEl.querySelectorAll('.trash-restore').forEach(btn => btn.onclick = () => trashRestore(btn.dataset.table, btn.dataset.id));
-      pEl.querySelectorAll('.trash-perm').forEach(btn => btn.onclick = () => trashPermDelete(btn.dataset.table, btn.dataset.id));
-    }
-  }
-
-  // tasks 목록
-  const tEl = document.getElementById('trash-tasks-list');
-  if(tEl) {
-    if(!tt.data || tt.data.length===0) {
-      tEl.innerHTML = '<div class="rev-pending-empty">삭제된 작업이 없어요 ✓</div>';
-    } else {
-      tEl.innerHTML = tt.data.map(t => {
-        const delAt = t.deleted_at ? new Date(t.deleted_at).toLocaleDateString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-        const sn = slotName(t.slot);
-        return `<div class="trash-item">
-          <div class="trash-item-info">
-            <div class="trash-item-name">${esc(t.name)}</div>
-            <div class="trash-item-meta">담당자 ${esc(t.sub||'')}${sn?' · 구좌 '+esc(sn):''} · 납기 ${(t.due||'').replace(/-/g,'.')} · 삭제 ${delAt}</div>
-          </div>
-          <div class="trash-item-btns">
-            <button class="trash-restore" data-table="tasks" data-id="${t.id}"><i class="ti ti-arrow-back-up"></i> 복원</button>
-            <button class="trash-perm" data-table="tasks" data-id="${t.id}">완전 삭제</button>
-          </div>
-        </div>`;
-      }).join('');
-      tEl.querySelectorAll('.trash-restore').forEach(btn => btn.onclick = () => trashRestore(btn.dataset.table, btn.dataset.id));
-      tEl.querySelectorAll('.trash-perm').forEach(btn => btn.onclick = () => trashPermDelete(btn.dataset.table, btn.dataset.id));
-    }
-  }
-
-  // 전체 완전삭제 버튼
-  document.getElementById('trash-empty-pending').onclick = () => trashEmptyAll('pending');
-  document.getElementById('trash-empty-tasks').onclick = () => trashEmptyAll('tasks');
-  updTrashBadge();
-}
-
-async function trashRestore(table, id) {
-  const err = await restoreItem(table, id);
-  if(err){ showT('복원 실패: '+err.message); return; }
-  // 로컬 배열에 다시 추가 (새로고침 없이)
-  if(table==='tasks') {
-    const {data} = await sb.from('tasks').select('*').eq('id',id).single();
-    if(data) { const mapTask = r=>({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done,desc:r.description||''}); upsertLocal(tasks, data, mapTask); renderG(); renderReqList(); renderRevSchedule(); }
-  } else {
-    const {data} = await sb.from('pending').select('*').eq('id',id).single();
-    if(data) { const mapP = r=>({id:r.id,name:r.name,sub:r.sub,type:r.type,due:r.due,priority:r.priority,desc:r.description,regAt:r.reg_at}); upsertLocal(pending, data, mapP); updB(); renderReqList(); renderRev(); }
-  }
-  showT('복원됐어요!'); renderTrash();
-}
-
-async function trashPermDelete(table, id) {
-  if(!(await confirmDanger('완전 삭제하면 복원할 수 없어요. 정말 삭제할까요?', {title:'완전 삭제', okLabel:'완전 삭제'}))) return;
-  const err = await hardDelete(table, id);
-  if(err){ showT('삭제 실패: '+err.message); return; }
-  showT('완전 삭제됐어요.'); renderTrash();
-}
-
-async function trashEmptyAll(table) {
-  const label = table==='pending' ? '삭제된 요청 전체' : '삭제된 작업 전체';
-  if(!(await confirmDanger(`${label}를 완전 삭제할까요? 복원할 수 없어요.`, {title:'전체 완전 삭제', okLabel:'전체 삭제'}))) return;
-  const { error } = await sb.from(table).delete().not('deleted_at','is',null);
-  if(error){ showT('삭제 실패: '+error.message); return; }
-  showT('전체 완전 삭제됐어요.'); renderTrash();
-}
-
-// ══ 담당자 통계 ══
-async function renderStats() {
-  if(!unlocked) return;
-  const el = document.getElementById('stats-content');
-  if(!el) return;
-  el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--t3);font-size:13px;"><i class="ti ti-loader" style="font-size:20px;display:block;margin-bottom:8px;"></i>통계 불러오는 중...</div>';
-
-  const [allTasks, allPending] = await Promise.all([
-    sb.from('tasks').select('*').order('created_at'),
-    sb.from('pending').select('*').order('created_at')
-  ]);
-
-  const allData = [
-    ...(allTasks.data||[]).map(r=>({...r,_src:'tasks'})),
-    ...(allPending.data||[]).map(r=>({...r,_src:'pending'}))
-  ];
-  if(!allData.length){ el.innerHTML='<div class="rev-pending-empty">통계 데이터가 없어요</div>'; return; }
-
-  // 집계
-  const byPerson = {};
-  allData.forEach(r => {
-    const name = r.sub||'(미지정)';
-    if(!byPerson[name]) byPerson[name]={name,total:0,urgent:0,normal:0,low:0,days:[],tasks:0,pending:0};
-    byPerson[name].total++;
-    if(r.priority==='urgent') byPerson[name].urgent++;
-    else if(r.priority==='low') byPerson[name].low++;
-    else byPerson[name].normal++;
-    byPerson[name][r._src]++;
-    const reg = r.reg_at||r.created_at;
-    if(reg&&r.due){const d=(new Date(r.due)-new Date(reg.slice(0,10)))/86400000; if(d>=0&&d<365) byPerson[name].days.push(d);}
-  });
-  Object.values(byPerson).forEach(p=>{
-    p.avgLead = p.days.length ? +(p.days.reduce((a,b)=>a+b,0)/p.days.length).toFixed(1) : null;
-    p.urgentRate = p.total ? Math.round(p.urgent/p.total*100) : 0;
-    // 주의 담당자 기준: 총 5건 이상 + (급건 비율 30% 이상 OR 평균 납기 여유 3일 미만)
-    p.isRisky = p.total >= 5 && (p.urgentRate>=30 || (p.avgLead!==null && p.avgLead<3));
-  });
-  const sorted = Object.values(byPerson).sort((a,b)=>b.total-a.total);
-  const risky = sorted.filter(p=>p.isRisky);
-
-  // 요약 카드
-  const totalReqs = allData.length;
-  const urgentAll = allData.filter(r=>r.priority==='urgent').length;
-  const urgentRate = Math.round(urgentAll/totalReqs*100);
-  const allLeads = allData.filter(r=>{const reg=r.reg_at||r.created_at; return reg&&r.due;})
-    .map(r=>(new Date(r.due)-new Date((r.reg_at||r.created_at).slice(0,10)))/86400000)
-    .filter(d=>d>=0&&d<365);
-  const avgLeadAll = allLeads.length ? (allLeads.reduce((a,b)=>a+b,0)/allLeads.length).toFixed(1) : '-';
-
-  // 주의 담당자 카드
-  const riskyCards = risky.length===0
-    ? '<div class="rev-pending-empty" style="padding:20px 0;">주의 담당자가 없어요 ✓</div>'
-    : `<div class="stats-risky-grid">${risky.map(p=>{
-        const leadTxt = p.avgLead!==null ? p.avgLead+'일' : '-';
-        const tags = [];
-        if(p.urgentRate>=30) tags.push(`<span class="stats-tag stats-tag-red">급건 ${p.urgentRate}%</span>`);
-        if(p.avgLead!==null&&p.avgLead<3) tags.push(`<span class="stats-tag stats-tag-orange">납기여유 ${leadTxt}</span>`);
-        return `<div class="stats-risky-card">
-          <div class="stats-risky-name">${esc(p.name)}</div>
-          <div class="stats-risky-tags">${tags.join('')}</div>
-          <div class="stats-risky-row"><span>총 요청</span><strong>${p.total}건</strong></div>
-          <div class="stats-risky-row"><span>급건</span><strong>${p.urgent}건</strong></div>
-          <div class="stats-risky-row"><span>평균 납기 여유</span><strong>${leadTxt}</strong></div>
-        </div>`;
-      }).join('')}</div>`;
-
-  // 전체 통계 테이블
-  const rows = sorted.map(p=>{
-    const leadTxt = p.avgLead!==null ? p.avgLead+'일' : '<span style="color:var(--t3)">-</span>';
-    const barW = Math.min(p.urgentRate,100);
-    const barColor = p.urgentRate>=50?'#ef4444':p.urgentRate>=30?'#f97316':'#22c55e';
-    return `<tr${p.isRisky?' class="stats-risky-row-tr"':''}>
-      <td><div class="stats-person-cell">
-        <span class="stats-person-name">${esc(p.name)}</span>
-        ${p.isRisky?'<span class="stats-badge-warn">주의</span>':''}
-      </div></td>
-      <td class="stats-center"><strong>${p.total}</strong></td>
-      <td class="stats-center">
-        <span class="${p.urgent>0?'stats-badge-urgent':''}">${p.urgent}</span>
-      </td>
-      <td class="stats-center">${p.normal}</td>
-      <td class="stats-center">${p.low}</td>
-      <td class="stats-center">${leadTxt}</td>
-      <td>
-        <div class="stats-bar-wrap">
-          <div class="stats-bar-fill" style="width:${barW}%;background:${barColor};"></div>
-          <span class="stats-bar-label">${p.urgentRate}%</span>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  el.innerHTML = `
-    <div class="stats-summary-row">
-      <div class="stats-summary-card"><div class="stats-summary-val">${totalReqs}</div><div class="stats-summary-lbl">전체 요청</div></div>
-      <div class="stats-summary-card"><div class="stats-summary-val">${urgentAll} <span style="font-size:14px;color:var(--t3)">(${urgentRate}%)</span></div><div class="stats-summary-lbl">급건 요청</div></div>
-      <div class="stats-summary-card"><div class="stats-summary-val">${avgLeadAll}일</div><div class="stats-summary-lbl">평균 납기 여유</div></div>
-      <div class="stats-summary-card"><div class="stats-summary-val">${sorted.length}</div><div class="stats-summary-lbl">담당자 수</div></div>
-      <div class="stats-summary-card stats-summary-warn"><div class="stats-summary-val">${risky.length}</div><div class="stats-summary-lbl">주의 담당자</div></div>
-    </div>
-
-    <div class="rev-box" style="margin-bottom:16px;">
-      <div class="rev-box-hd">
-        <div class="rev-box-title"><i class="ti ti-alert-triangle" style="color:#d97706;"></i>주의 담당자</div>
-        <span style="font-size:12px;color:var(--t3);">요청 5건 이상 · 급건 30% 이상 또는 납기 여유 3일 미만</span>
-      </div>
-      <div class="rev-box-body">${riskyCards}</div>
-    </div>
-
-    <div class="rev-box">
-      <div class="rev-box-hd"><div class="rev-box-title"><i class="ti ti-table"></i>담당자별 전체 통계</div></div>
-      <div style="overflow-x:auto;">
-        <table class="stats-table2">
-          <thead><tr>
-            <th style="min-width:110px;">담당자</th>
-            <th>총 요청</th><th>급건</th><th>일반</th><th>여유</th>
-            <th>평균 납기 여유</th><th style="min-width:120px;">급건 비율</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    </div>`;
-}
-
 async function checkSession() {
   const { data } = await sb.auth.getSession();
   unlocked = !!data?.session;
   initNotif();
-  if(unlocked) updTrashBadge();
   // 세션 확인이 늦게 끝나는 사이 사용자가 먼저 검토·확정/설정을 눌러 잠금 화면이 떠 있었다면,
   // 이미 로그인된 상태이므로 잠금 화면에 머물지 말고 바로 원래 화면으로 보내줌
   if(unlocked && document.getElementById('page-lock')?.classList.contains('active')) {
@@ -1212,7 +942,6 @@ sb.auth.onAuthStateChange((_event, session) => {
   const wasUnlocked = unlocked;
   unlocked = !!session;
   syncNotifVisibility();
-  if(unlocked) updTrashBadge();
   if(unlocked && !wasUnlocked && document.getElementById('page-lock')?.classList.contains('active')) {
     sw(pTarget||'review');
     addNotif('ABBG 로그인됐어요. 새 요청을 확인해보세요!', 'login');
@@ -1624,9 +1353,9 @@ async function rejR(id) {
   const apBtn=document.querySelector(`.btn-ap[data-id="${id}"]`), rjBtn=document.querySelector(`.btn-rj[data-id="${id}"]`);
   if(apBtn) apBtn.disabled=true; if(rjBtn) rjBtn.disabled=true;
   try {
-    const error = await softDelete('pending', id);
+    const { error } = await sb.from('pending').delete().eq('id',id);
     if(error){ showT('반려 실패: '+error.message+' — 다시 시도해주세요.'); return; }
-    pending.splice(idx,1); updB(); renderRev(); renderReqList(); showT(name+' 반려됐어요. 휴지통에서 복원할 수 있어요.');
+    pending.splice(idx,1); updB(); renderRev(); showT(name+' 반려됐어요.');
   } finally {
     if(apBtn) apBtn.disabled=false; if(rjBtn) rjBtn.disabled=false;
   }
@@ -1648,14 +1377,28 @@ async function toggleDone(id, opts) {
     showT(t.name+(t.done?' 완료 처리했어요!':' 미완료로 변경했어요!'), {undo: () => toggleDone(id)});
   }
 }
+// ── 소프트 삭제 헬퍼 ──
+async function softDelete(table, id) {
+  const { error } = await sb.from(table).update({deleted_at: new Date().toISOString()}).eq('id', id);
+  return error;
+}
+async function hardDelete(table, id) {
+  const { error } = await sb.from(table).delete().eq('id', id);
+  return error;
+}
+async function restoreItem(table, id) {
+  const { error } = await sb.from(table).update({deleted_at: null}).eq('id', id);
+  return error;
+}
+
 async function delTask(id) {
-  if(!(await confirmDanger('작업을 휴지통으로 이동할까요? ABBG 전용 탭에서 복원하거나 완전 삭제할 수 있어요.', {title:'작업 삭제', okLabel:'휴지통으로 이동'}))) return false;
+  if(!(await confirmDanger('삭제하면 되돌릴 수 없어요. 이 작업을 삭제할까요?', {title:'작업 삭제'}))) return false;
   const idx=tasks.findIndex(x=>x.id===id); if(idx<0) return false;
   const name=tasks[idx].name;
-  const error = await softDelete('tasks', id);
+  const { error } = await sb.from('tasks').delete().eq('id',id);
   if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return false; }
   tasks.splice(idx,1); renderRev(); renderG(); renderReqList(); renderRevSchedule();
-  showT(name+' 휴지통으로 이동됐어요.');
+  showT(name+' 삭제됐어요.');
   return true;
 }
 function renderP() {
