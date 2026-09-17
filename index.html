@@ -2041,6 +2041,10 @@ function setupRealtime() {
   sb.channel('rt-pending').on('postgres_changes', {event:'*', schema:'public', table:'pending'}, payload => {
     if(payload.eventType==='DELETE') {
       removeLocalById(pending, payload.old.id);
+    } else if(payload.new.deleted_at) {
+      // 소프트 삭제(반려/취소) — 로컬에서 제거
+      removeLocalById(pending, payload.new.id);
+      updTrashBadge();
     } else {
       const isNew = !pending.some(p=>p.id===payload.new.id);
       upsertLocal(pending, payload.new, mapPending);
@@ -2054,8 +2058,15 @@ function setupRealtime() {
   }).subscribe();
 
   sb.channel('rt-tasks').on('postgres_changes', {event:'*', schema:'public', table:'tasks'}, payload => {
-    if(payload.eventType==='DELETE') removeLocalById(tasks, payload.old.id);
-    else upsertLocal(tasks, payload.new, mapTask);
+    if(payload.eventType==='DELETE') {
+      removeLocalById(tasks, payload.old.id);
+    } else if(payload.new.deleted_at) {
+      // 소프트 삭제 — 로컬에서 제거
+      removeLocalById(tasks, payload.new.id);
+      updTrashBadge();
+    } else {
+      upsertLocal(tasks, payload.new, mapTask);
+    }
     renderReqList(); renderRev(); renderRevSchedule(); renderG();
   }).subscribe();
 
