@@ -9,21 +9,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="style.css">
+<meta name="referrer" content="no-referrer">
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <div class="app" id="app">
 
 
 <div class="mob-hd">
-  <div class="mob-logo">ABBG</div>
+  <div class="mob-logo client-title" id="mob-client-title">ABBG</div>
   <div class="mob-pg" id="mpg">요청서 작성</div>
   <button class="mob-more-btn" id="mob-more-btn" type="button" aria-label="더보기"><i class="ti ti-dots-vertical"></i></button>
 </div>
 <div class="mob-more-menu" id="mob-more-menu">
   <button class="mob-more-item" id="mob-more-tutorial"><i class="ti ti-help-circle"></i>사용 가이드</button>
-  <button class="mob-more-item" id="mob-more-staff"><i class="ti ti-user-cog"></i>구좌 담당자</button>
-  <button class="mob-more-item" id="mob-more-settings"><i class="ti ti-settings"></i>설정</button>
+  <button class="mob-more-item" id="mob-more-staff" hidden><i class="ti ti-user-cog"></i>구독 담당자</button>
+  <button class="mob-more-item" id="mob-more-settings" hidden><i class="ti ti-settings"></i>설정</button>
 </div>
 <div class="sidebar">
   <div class="sb-logo">
@@ -45,14 +46,15 @@
   <div class="sb-bottom">
     <div class="sb-bottom-lbl">ABBG 전용</div>
     <div class="ni" id="nav-review"><i class="ti ti-clipboard-check"></i>검토 · 확정<span class="nb" id="nb"></span></div>
-    <div class="ni" id="nav-staff"><i class="ti ti-user-cog"></i>구좌 담당자</div>
+    <div class="ni" id="nav-staff" hidden><i class="ti ti-user-cog"></i>구독 담당자</div>
     <div class="ni" id="nav-trash"><i class="ti ti-trash"></i>휴지통<span class="nb" id="nb-trash"></span></div>
     <div class="ni" id="nav-stats"><i class="ti ti-chart-bar"></i>담당자 통계</div>
-    <div class="ni" id="nav-settings"><i class="ti ti-settings"></i>설정</div>
+    <div class="ni" id="nav-settings" hidden><i class="ti ti-settings"></i>설정</div>
   </div>
 </div>
 
 <div class="main">
+  <div class="client-bar"><span class="client-title" id="client-title">ABBG</span></div>
   <div class="notif-wrap" id="notif-wrap" style="display:none;">
     <div class="notif-drop" id="notif-drop">
       <div class="notif-hd">
@@ -78,6 +80,16 @@
             <div class="person-hint">명단에 없으면 <span id="go-people">담당자 · 휴무일</span>에서 추가해주세요.</div>
           </div>
           <div class="fld">
+            <span class="lbl">작업 유형<span class="req">*</span></span>
+            <select id="req-type"><option value="">유형 선택</option></select>
+            <label class="illust-opt" id="illust-wrap" hidden><input type="checkbox" id="req-illust"> 일러스트 작업 포함 <span>(소요일 +1일)</span></label>
+            <div class="th" id="type-hint">
+              <div class="th-top"><span class="th-nm" id="h-nm"></span><span class="th-days" id="h-days"></span></div>
+              <div class="th-exs" id="h-exs"></div>
+              <div class="th-note" id="h-note"></div>
+            </div>
+          </div>
+          <div class="fld">
             <span class="lbl">희망 납기일<span class="req">*</span></span>
             <input type="date" id="req-due">
             <div class="due-panel" id="due-panel">
@@ -87,26 +99,7 @@
             </div>
             <div class="due-suggest" id="due-suggest"></div>
           </div>
-          <div class="fld ff">
-            <span class="lbl">작업 유형<span class="req">*</span></span>
-            <select id="req-type">
-              <option value="">유형 선택</option>
-              <option value="detail">상세페이지 / 이벤트페이지</option>
-              <option value="banner">배너 / 광고소재</option>
-              <option value="package">패키지 / 목업</option>
-              <option value="exportpkg">[수출] 패키지</option>
-              <option value="sns">SNS 콘텐츠</option>
-              <option value="print">인쇄물 / 오프라인</option>
-              <option value="edit">수정 / 보완</option>
-              <option value="etc">기타</option>
-            </select>
-            <div class="th" id="type-hint">
-              <div class="th-top"><span class="th-nm" id="h-nm"></span><span class="th-days" id="h-days"></span></div>
-              <div class="th-exs" id="h-exs"></div>
-              <div class="th-note" id="h-note"></div>
-            </div>
-          </div>
-          <div class="fld ff"><span class="lbl">작업명<span class="req">*</span></span><input type="text" id="req-title" placeholder="예) 바엘 올리브영 상세페이지 신규 제작"></div>
+          <div class="fld"><span class="lbl">작업명<span class="req">*</span></span><input type="text" id="req-title" placeholder="예) 바엘 올리브영 상세페이지 신규 제작"></div>
         </div>
       </div>
 
@@ -165,9 +158,9 @@
         </div>
         <div class="mg-box">
           <div class="mg-ttl"><i class="ti ti-calendar-off"></i>휴무일 관리</div>
-          <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.5;">법정공휴일 외 회사 휴무일을 등록하면 납기 선택과 스케줄에 반영돼요.</p>
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.5;">ABBG 휴무일이에요. 납기 선택과 스케줄에 반영되고, ABBG 관리 화면에서 등록해요.</p>
           <div class="chip-grid" id="offgrid"></div>
-          <div class="add-row"><input type="date" id="new-off"><button class="add-btn" id="btn-add-off">+ 추가</button></div>
+          <div class="add-row" hidden><input type="date" id="new-off"><button class="add-btn" id="btn-add-off">+ 추가</button></div>
         </div>
       </div>
     </div>
@@ -178,7 +171,7 @@
         <div class="notice-title"><i class="ti ti-info-circle"></i>업무 요청 전 필독 안내</div>
         <div class="notice-list">
           <div class="notice-item"><div class="notice-num">1</div><div class="notice-text">요청 시 <b>작업 기간도 함께 고려</b>해주세요. 실제 착수까지 <b>1~2일 정도의 준비 기간</b>이 필요합니다.</div></div>
-          <div class="notice-item"><div class="notice-num">2</div><div class="notice-text">업무 요청 전 <b>스케줄 탭에서 구좌 1·2 일정을 먼저 확인</b>해주세요. 기존 일정과 충돌 여부를 고려하여 요청 부탁드립니다.</div></div>
+          <div class="notice-item"><div class="notice-num">2</div><div class="notice-text">업무 요청 전 <b>스케줄 탭에서 구독 1·2 일정을 먼저 확인</b>해주세요. 기존 일정과 충돌 여부를 고려하여 요청 부탁드립니다.</div></div>
           <div class="notice-item"><div class="notice-num">3</div><div class="notice-text"><b>소스를 업로드한 드라이브 링크</b>도 함께 공유해주세요. 누락될 경우 작업이 지연될 수 있습니다.</div></div>
           <div class="notice-item"><div class="notice-num">4</div><div class="notice-text">수정 요청 시 <b>한 파일로 정리하여 전달</b>해주세요.</div></div>
           <div class="notice-item"><div class="notice-num">5</div><div class="notice-text">급건은 <b>하루에 처리 가능한 건수가 제한적</b>이에요. 등록 시 뜨는 일정 조율 안내를 확인하시고, 급한 건은 <b>카톡방으로도 편하게 말씀</b>해주세요.</div></div>
@@ -194,9 +187,9 @@
         </div>
       </div>
       <div class="tut-steps">
-        <div class="tut-step"><div class="ts-top"><div class="ts-num">1</div></div><div class="ts-t">요청서 작성</div><div class="ts-d">요청자, 납기일, 작업 유형, 작업명, 우선순위, 드라이브 경로를 입력하세요.</div></div>
+        <div class="tut-step"><div class="ts-top"><div class="ts-num">1</div></div><div class="ts-t">요청서 작성</div><div class="ts-d">요청자, 작업 유형, 납기일, 작업명, 우선순위, 드라이브 경로를 입력하세요.</div></div>
         <div class="tut-step"><div class="ts-top"><div class="ts-num">2</div></div><div class="ts-t">일정 조율 알림</div><div class="ts-d">납기가 촉박하거나 드라이브 링크가 없으면, 또는 그 날 급건이 몰려 있으면 등록 전 경고와 추천 마감일이 자동으로 떠요.</div></div>
-        <div class="tut-step"><div class="ts-top"><div class="ts-num">3</div><div class="ts-tag">ABBG 전용</div></div><div class="ts-t">검토 · 확정</div><div class="ts-d">요청이 들어오면 구좌를 배정하고 확정 납기일 입력 후 승인하세요.</div></div>
+        <div class="tut-step"><div class="ts-top"><div class="ts-num">3</div><div class="ts-tag">ABBG 전용</div></div><div class="ts-t">검토 · 확정</div><div class="ts-d">요청이 들어오면 구독을 배정하고 확정 납기일 입력 후 승인하세요.</div></div>
         <div class="tut-step"><div class="ts-top"><div class="ts-num">4</div></div><div class="ts-t">스케줄 확인</div><div class="ts-d">확정된 작업은 진하게, 검토 대기 중인 요청은 흐리게 구분돼요. 작업명 앞 체크 버튼으로 완료 처리, 날짜 위 복사 아이콘으로 그 날 마감 목록을 바로 복사할 수 있어요.</div></div>
         <div class="tut-step"><div class="ts-top"><div class="ts-num">5</div></div><div class="ts-t">담당자 · 휴무일</div><div class="ts-d">담당자 추가 및 회사 휴무일을 직접 등록하면 납기 선택에서 자동으로 막혀요.</div></div>
         <div class="tut-step"><div class="ts-top"><div class="ts-num">6</div></div><div class="ts-t">드라이브 경로 필수</div><div class="ts-d">요청 내용란에 네이버웍스 드라이브 경로를 항상 함께 적어주세요.</div></div>
@@ -207,7 +200,7 @@
         <div class="tut-tip"><i class="ti ti-calendar-event"></i><div class="tt-t">공휴일 자동 차단</div><div class="tt-d">법정공휴일과 대체공휴일은 납기일 선택이 자동으로 막혀요.</div></div>
         <div class="tut-tip"><i class="ti ti-alert-triangle"></i><div class="tt-t">일정 과부하 경고</div><div class="tt-d">해당 날짜 마감 건이 3건 이상이면 자동으로 경고가 떠요.</div></div>
         <div class="tut-tip"><i class="ti ti-copy"></i><div class="tt-t">급건 캐파 초과 표시</div><div class="tt-d">급건이 하루 처리 캐파를 넘으면 간트차트에 표시되고 추천 마감일을 안내해요. 날짜 위 복사 아이콘으로 마감 목록도 바로 복사할 수 있어요.</div></div>
-        <div class="tut-tip"><i class="ti ti-clock"></i><div class="tt-t">소요일 가이드</div><div class="tt-d">작업 유형 선택 시 예상 소요일과 유사 작업 예시를 안내해요.</div></div>
+        <div class="tut-tip"><i class="ti ti-clock"></i><div class="tt-t">소요일 가이드</div><div class="tt-d">작업 유형을 고르면 예상 소요일과 기준 분량을 안내하고, 희망 납기일을 소요일 기준으로 채워줘요.</div></div>
         <div class="tut-tip"><i class="ti ti-refresh"></i><div class="tt-t">실시간 반영</div><div class="tt-d">다른 사람이 요청을 올리거나 완료 처리하면 새로고침 없이 화면에 바로 반영돼요.</div></div>
         <div class="tut-tip"><i class="ti ti-shield-check"></i><div class="tt-t">삭제 전 한 번 더 확인</div><div class="tt-d">작업·담당자·휴무일 삭제는 실수 방지를 위해 확인 창을 한 번 더 거쳐요.</div></div>
       </div>
@@ -298,12 +291,12 @@
     </div>
 
     <div class="page" id="page-staff">
-      <div class="pg-hd"><div class="pg-title">구좌 담당자 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div><div class="pg-sub">ABBG 내부 구좌 담당자를 관리해요. 추가·삭제하면 스케줄 필터·범례·구좌 배정 목록에 바로 반영돼요.</div></div>
+      <div class="pg-hd"><div class="pg-title">구독 담당자 <span class="abbg-pill"><i class="ti ti-shield-check"></i>ABBG 전용</span></div><div class="pg-sub">ABBG 내부 구독 담당자를 관리해요. 추가·삭제하면 스케줄 필터·범례·구독 배정 목록에 바로 반영돼요.</div></div>
       <div class="mg-box" style="max-width:420px;">
         <div class="mg-ttl"><i class="ti ti-user-cog"></i>담당자 목록</div>
         <div class="chip-grid" id="sgrid"></div>
         <div class="add-row"><input type="text" id="new-staff" placeholder="이름 입력"><button class="add-btn" id="btn-add-staff">+ 추가</button></div>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.5;">진행 중인 작업에 배정된 담당자를 삭제하면 해당 작업의 구좌 표시는 유지되지만, 필터·범례·구좌 배정 목록에서는 빠져요.</p>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.5;">진행 중인 작업에 배정된 담당자를 삭제하면 해당 작업의 구독 표시는 유지되지만, 필터·범례·구독 배정 목록에서는 빠져요.</p>
       </div>
     </div>
 
@@ -394,6 +387,17 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── 이 페이지의 클라이언트 ──
+// 링크(/c/코드)로 들어오면 clients 테이블에서 이름과 id를 불러와요.
+let CLIENT_NAME = '';   // 링크 코드로 불러와요
+let CLIENT_ID = null;
+function renderClientTitle(){
+  const t = CLIENT_NAME ? `${CLIENT_NAME} × ABBG` : 'ABBG';
+  document.querySelectorAll('.client-title').forEach(el => { el.textContent = t; el.title = t; });
+  document.title = `${t} 디자인 요청`;
+}
+renderClientTitle();
+
 // ── Supabase 설정 ──
 const SUPABASE_URL = 'https://detrhxgthalaljrhbnmm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_3NY7XQjAKjNg3QiMjw2N_g_HKKDFFRV';
@@ -447,7 +451,9 @@ async function syncHolidaysFromAPI() {
     console.warn('공휴일 자동 갱신 실패 — 하드코딩된 기본값으로 동작해요.', e);
   }
 }
-const TI = {
+// ── 작업유형 ──
+// 이전에 쓰던 유형(기존 요청 표시용). 요청 폼 목록에는 나오지 않아요.
+const TI_LEGACY = {
   detail:{name:'상세페이지/이벤트페이지',days:'3~4일',minDays:3,ex:['올리브영 상세','스마트스토어','이벤트 랜딩','브랜드 기획전'],note:'분량에 따라 달라요. 자료 검토 후 일정 확정 안내드려요.'},
   banner:{name:'배너/광고소재',days:'1~2일',minDays:1,ex:['네이버 GFA','카카오 배너','아마존 판넬','SNS 광고'],note:'사이즈 바리에이션 많으면 추가 시간이 필요해요.'},
   package:{name:'패키지/목업',days:'2~3일',minDays:2,ex:['단상자','라벨 수정','목업 합성','쇼핑백'],note:'인쇄용은 규격·도무송 확인 후 착수해요.'},
@@ -457,12 +463,59 @@ const TI = {
   edit:{name:'수정/보완',days:'당일~1일',minDays:0,ex:['텍스트 수정','이미지 교체','사이즈 변경','색상 조정'],note:'원본 파일 드라이브 경로도 알려주시면 빠르게 처리돼요.'},
   etc:{name:'기타',days:'확인 후 안내',minDays:2,ex:['번역 편집','영문 버전','일본어 현지화'],note:'내용 상세히 적어주시면 일정 확인 후 회신드려요.'}
 };
+// 이 클라이언트의 작업유형 — 관리 화면 '작업유형'과 같은 기준.
+// Supabase를 나눈 뒤에는 work_types 테이블에서 불러와요.
+// min/max = 소요 영업일(하나로 된 일수는 같게, 당일은 0), inquiry = 별도 문의, illust = 일러스트 옵션(+1일)
+// key는 요청 데이터(pending.type)에 저장되는 값이라, 뜻이 같은 예전 유형은 예전 key를 그대로 써요.
+let WORK_TYPES = [
+  {key:'ci-logo',cat:'CI·BI',name:'로고',qty:'2종',min:4,max:5,cap:'complex'},
+  {key:'ci-draft',cat:'CI·BI',name:'시안 추가',qty:'1종',min:1,max:2,cap:'complex'},
+  {key:'ci-system',cat:'CI·BI',name:'시스템 구축',qty:'베이직 1종 / 어플리케이션 10종',min:4,max:5,cap:'complex'},
+  {key:'pkg-label',cat:'패키지',name:'라벨',qty:'2종',min:2,max:3,cap:'complex',illust:true},
+  {key:'pkg-pouch',cat:'패키지',name:'파우치',qty:'2종',min:2,max:3,cap:'complex',illust:true},
+  {key:'pkg-box',cat:'패키지',name:'단상자',qty:'2종',min:3,max:4,cap:'complex',illust:true},
+  {key:'pkg-bottle',cat:'패키지',name:'용기',qty:'2종',min:3,max:4,cap:'complex',illust:true},
+  {key:'exportpkg',cat:'패키지',name:'[수출] 패키지',qty:'2종',min:2,max:4,cap:'complex',illust:true,note:'국가별 표기 규정 확인 후 착수해요.'},
+  {key:'detail',cat:'콘텐츠',name:'상세페이지',qty:'~30,000px',min:3,max:4,cap:'complex'},
+  {key:'ct-keyvisual',cat:'콘텐츠',name:'상세페이지 키비주얼',qty:'2종',min:1,max:2,cap:'complex',note:'인트로 부분 키비주얼 확정용으로 작업해요.'},
+  {key:'banner',cat:'콘텐츠',name:'배너/광고소재/SNS/썸네일',qty:'2P',min:1,max:2,cap:'simple',note:'분량에 따라 상이할 수 있어요.'},
+  {key:'ct-size',cat:'콘텐츠',name:'사이즈 베리에이션',qty:'5종',min:1,max:2,cap:'simple'},
+  {key:'pr-leaflet',cat:'편집·인쇄',name:'리플렛/브로셔',qty:'6P 양면 ~ 표지+12P',min:3,max:4,cap:'complex'},
+  {key:'pr-catalog',cat:'편집·인쇄',name:'카탈로그/디지털 시각자료',qty:'표지+~12P',min:4,max:5,cap:'complex'},
+  {key:'pr-poster',cat:'편집·인쇄',name:'포스터/X배너',qty:'1종',min:1,max:2,cap:'complex'},
+  {key:'pr-card',cat:'편집·인쇄',name:'명함',qty:'2종',min:1,max:2,cap:'complex'},
+  {key:'pr-banner',cat:'편집·인쇄',name:'현수막/간판/POP/전단지',qty:'1종',min:2,max:3,cap:'complex'},
+  {key:'pr-signage',cat:'편집·인쇄',name:'사이니지 (외부/내부 픽토그램)',qty:'외부 1종 / 내부 5종',min:2,max:3,cap:'complex'},
+  {key:'web-main',cat:'웹·앱',name:'메인페이지 디자인',qty:'',min:5,max:5,cap:'complex'},
+  {key:'web-sub',cat:'웹·앱',name:'서브페이지 디자인',qty:'',min:5,max:5,cap:'complex'},
+  {key:'web-etc',cat:'웹·앱',name:'기타 디자인 (파비콘·메타이미지 등)',qty:'',min:3,max:3,cap:'complex'},
+  {key:'web-guide',cat:'웹·앱',name:'스타일 가이드',qty:'',min:3,max:3,cap:'complex'},
+  {key:'web-feedback',cat:'웹·앱',name:'피드백 반영',qty:'1회',min:5,max:5,cap:'complex'},
+  {key:'web-build',cat:'웹·앱',name:'홈페이지 구축 (코딩 없이, PC·MO)',qty:'',min:20,max:20,cap:'complex'},
+  {key:'edit',cat:'수정/보완',name:'수정/보완',qty:'',min:0,max:1,cap:'simple',note:'간단한 수정 기준이에요. 분량에 따라 상이할 수 있어요.'},
+  {key:'brand',cat:'브랜딩',name:'별도 문의',qty:'',min:null,max:null,cap:'complex',inquiry:true},
+  {key:'etc',cat:'기타',name:'별도 문의',qty:'',min:null,max:null,cap:'complex',inquiry:true}
+];
+const fmtDays = t => t.inquiry ? '확인 후 안내' : (t.min===t.max ? (t.min===0?'당일':t.min+'일') : `${t.min===0?'당일':t.min}~${t.max}일`);
+// TI = 이름·소요일 조회용 (예전 유형 + 지금 유형)
+const TI = Object.assign({}, TI_LEGACY);
+function tiEntry(t){
+  const label = (t.cat==='브랜딩'||t.cat==='기타') ? `${t.cat} · ${t.name}` : t.name;
+  return {name:label, days:fmtDays(t), minDays:t.inquiry?0:t.min, maxDays:t.max, ex:t.qty?['기준 분량 '+t.qty]:[], note:t.inquiry?'ABBG가 확인 후 일정을 안내드려요.':(t.note||''), illust:!!t.illust, inquiry:!!t.inquiry, cat:t.cat};
+}
 // ── 급건(우선순위:긴급) 캐파 기준 ──
 // 이미지·문안수정/색감보정(edit), 인쇄용 파일 전달(print), 레퍼런스 확실한 간단 썸네일(sns)류는
 // 하루 최대 3건까지는 급건으로 소화 가능하다고 보고, 4건째부터 일정 조율 필요로 표시함.
 // 그 외 유형(상세페이지·배너·패키지·기타)은 손이 많이 가는 작업으로 보고 급건 1건만 겹쳐도 조율 필요로 표시함.
 // (정확한 기준은 운영하면서 CAP_FRIENDLY_MAX / CAP_STRICT_MAX 숫자만 조정하면 돼요.)
-const CAP_FRIENDLY_TYPES = ['edit','print','sns'];
+const CAP_FRIENDLY_TYPES = [];
+// 작업유형 목록 적용 (처음엔 기본값, 접속 후 DB의 이 클라이언트 작업유형으로 교체)
+function applyWorkTypes(list){
+  WORK_TYPES = list;
+  WORK_TYPES.forEach(t => { TI[t.key] = tiEntry(t); });
+  CAP_FRIENDLY_TYPES.splice(0, CAP_FRIENDLY_TYPES.length, ...new Set(['edit','print','sns', ...WORK_TYPES.filter(t=>t.cap==='simple').map(t=>t.key)]));
+}
+applyWorkTypes(WORK_TYPES);
 const CAP_FRIENDLY_MAX = 3;
 const CAP_STRICT_MAX = 1;
 function capFor(type){ return CAP_FRIENDLY_TYPES.includes(type) ? CAP_FRIENDLY_MAX : CAP_STRICT_MAX; }
@@ -497,10 +550,10 @@ function suggestDate(dateStr, type, excludeId) {
   return null;
 }
 const DN = ['월','화','수','목','금'];
-const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',staff:'구좌 담당자',trash:'휴지통',stats:'담당자 통계',settings:'설정',lock:'ABBG 전용'};
+const PAGES = {form:'요청서 작성',requests:'요청 현황',schedule:'스케줄',people:'담당자 · 휴무일',tutorial:'사용 가이드',review:'검토 · 확정',staff:'구독 담당자',trash:'휴지통',stats:'담당자 통계',settings:'설정',lock:'ABBG 전용'};
 const TABS = ['form','requests','schedule','people','tutorial','review','staff','trash','stats','settings','lock'];
 
-// ── 구좌(우리측 담당자) 색상 팔레트 ──
+// ── 구독(우리측 담당자) 색상 팔레트 ──
 // staff 테이블의 담당자 수는 늘어나거나 줄어들 수 있어서, 고정된 CSS 클래스(.sb1/.sb2 등) 대신
 // id 기반으로 팔레트를 순환시켜 인라인 스타일로 색을 입힘. 팔레트 길이를 넘으면 색이 순환되어 재사용됨.
 const SLOT_PALETTE = [
@@ -511,7 +564,7 @@ const SLOT_PALETTE = [
   {b:'#FFF6E0',m:'#F5D98B',d:'#7A5200',c:'#E0A83E'},
   {b:'#EAFBF0',m:'#A8E6BE',d:'#1B5E33',c:'#3FAE64'},
 ];
-const slotColor = id => SLOT_PALETTE[Math.abs((Number(id)||0)-1) % SLOT_PALETTE.length];
+const slotColor = id => SLOT_PALETTE[((slotIdx(id)||1)-1) % SLOT_PALETTE.length];
 const slotIdx = id => { const i = staff.findIndex(s=>String(s.id)===String(id)); return i>=0?i+1:null; };
 const slotName = id => { const s = staff.find(x=>String(x.id)===String(id)); return s?s.name:''; };
 
@@ -603,71 +656,58 @@ function showLoadError(msg) {
   bar.textContent = '⚠ ' + msg;
 }
 async function loadAll() {
-  let t, p, pe, o, st;
+  let t, p, pe, o, sbs, wt;
   try {
-    [t, p, pe, o, st] = await Promise.all([
-      sb.from('tasks').select('*').is('deleted_at',null).order('created_at'),
-      sb.from('people').select('*').order('id'),
-      sb.from('pending').select('*').is('deleted_at',null).order('created_at'),
+    [t, p, pe, o, sbs, wt] = await Promise.all([
+      sb.from('tasks').select('*').eq('client_id',CLIENT_ID).is('deleted_at',null).order('created_at'),
+      sb.from('people').select('*').eq('client_id',CLIENT_ID).order('id'),
+      sb.from('pending').select('*').eq('client_id',CLIENT_ID).is('deleted_at',null).order('created_at'),
       sb.from('off_days').select('*').order('date'),
-      sb.from('staff').select('*').order('id')
+      sb.from('subscriptions').select('id,no,team_id').eq('client_id',CLIENT_ID).order('no'),
+      sb.from('work_types').select('*').eq('client_id',CLIENT_ID).order('sort')
     ]);
   } catch (e) {
     showLoadError('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 새로고침해주세요.');
     return;
   }
   // 쿼리 중 하나라도 실패하면 '데이터 없음'으로 착각하지 않도록 여기서 멈추고 에러를 보여줌
-  // (예전엔 실패 시 조용히 빈 배열 처리되면서 시드 데이터가 중복 삽입될 수 있었음)
-  const err = t.error || p.error || pe.error || o.error || st.error;
+  const err = t.error || p.error || pe.error || o.error || sbs.error || wt.error;
   if(err) {
     showLoadError('데이터를 불러오지 못했어요: ' + err.message + ' — 새로고침해서 다시 시도해주세요.');
     return;
   }
-  tasks = (t.data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done,desc:r.description||''}));
+  tasks = (t.data||[]).map(mapTaskRow);
   people = (p.data||[]).map(r=>r.name);
-  pending = (pe.data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,type:r.type,due:r.due,priority:r.priority,desc:r.description,regAt:r.reg_at}));
+  pending = (pe.data||[]).map(mapPendingRow);
   offDays = (o.data||[]).map(r=>r.date);
-  staff = (st.data||[]).map(r=>({id:r.id,name:r.name}));
-  // 초기 데이터 없으면 기본값 삽입
-  if(people.length===0) await seedPeople();
-  if(staff.length===0) await seedStaff();
-  if(tasks.length===0) await seedTasks();
+  subsRaw = sbs.data||[];
+  await buildStaff();
+  if((wt.data||[]).length){
+    applyWorkTypes(wt.data.map(r=>({key:r.key,cat:r.cat,name:r.name,qty:r.qty,min:r.min_days,max:r.max_days,cap:r.cap,note:r.note,illust:r.illust,inquiry:r.inquiry})));
+    buildTypeSelect();
+  }
   renderP(); renderO(); renderStaff(); renderSlotTog(); renderLegend(); updB();
 }
+// DB 행 → 화면용 (slot = 구독 id)
+const mapTaskRow = r => ({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.sub_id==null?null:String(r.sub_id),done:r.done,desc:r.description||''});
+const mapPendingRow = r => ({id:r.id,name:r.name,sub:r.sub,type:r.type,due:r.due,priority:r.priority,desc:r.description,regAt:r.reg_at,illust:!!r.illust});
 
-async function seedPeople() {
-  const names = ['송경진','한유정','김은채','정자윤','김도연','은균','세별','Nahwa','이수연','하영','전웅기'];
-  await sb.from('people').insert(names.map(name=>({name})));
-  people = names;
+// 구독 목록 → staff 배열 (클라이언트에게는 '구독 N', ABBG에게는 연결된 팀원 이름)
+let subsRaw = [];
+async function buildStaff(){
+  let names = {};
+  if(unlocked){
+    const {data} = await sb.from('team').select('id,name');
+    (data||[]).forEach(m => names[m.id] = m.name);
+  }
+  staff = subsRaw.map(s => ({
+    id: s.id, no: s.no, team_id: s.team_id,
+    name: unlocked ? (s.team_id && names[s.team_id] ? `${names[s.team_id]} (구독 ${s.no})` : `구독 ${s.no} (미연결)`) : `구독 ${s.no}`
+  }));
 }
-
-// 구좌1=권효진 · 구좌2=김효진으로 이어져온 기존 스케줄 데이터(tasks.slot='1'/'2')와 그대로 맞도록,
-// 처음 한 번만 이 순서 그대로 insert해서 id 1,2가 배정되게 함(신규 테이블 기준).
-async function seedStaff() {
-  const names = ['권효진','김효진'];
-  const {data} = await sb.from('staff').insert(names.map(name=>({name}))).select();
-  staff = (data||[]).map(r=>({id:r.id,name:r.name}));
-}
-
-async function seedTasks() {
-  const seed = [
-    {name:'올리브영 스티커',sub:'한유정',start_date:'2026-08-11',due:'2026-08-12',priority:'urgent',slot:'1',done:false,description:'W:\\공용 드라이브\\[ABBG 업무요청]\\20260811_한유정_ 레와비데드롱스티커 사이즈수정\n오후 5시 이전 전달'},
-    {name:'카카오쇼핑 이벤트 배너',sub:'세별',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'1',done:false,description:'W:\\공용 드라이브\\커머스사업부\\브랜드디자인팀\\업무전달\\260811_카카오쇼핑하기 이벤트페이지\n오전까지 전달'},
-    {name:'골드파로 일본어 수정',sub:'Nahwa',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'1',done:false,description:'골드파로 일본어 수정본'},
-    {name:'베리말차효소 목업',sub:'정자윤',start_date:'2026-08-13',due:'2026-08-14',priority:'normal',slot:'1',done:false,description:'베리말차효소 목업 패키지 2장, 스틱 1장'},
-    {name:'카사베르디 싸바리',sub:'정세진',start_date:'2026-08-18',due:'2026-08-19',priority:'normal',slot:'1',done:false,description:'https://works.do/xk6n1MU\n카사베르디 비니거 싸바리, 카드 간지 및 쇼핑백 목업'},
-    {name:'레와비 증정용 안내지',sub:'송경진',start_date:'2026-08-11',due:'2026-08-11',priority:'normal',slot:'2',done:true,description:'W:\\공용 드라이브\\[ABBG 업무요청]\\20260811_전웅기_레와비안내문(수정)\n레와비 증정용 안내지 재제작'},
-    {name:'아마존 판넬 PC 4종',sub:'김도연',start_date:'2026-08-11',due:'2026-08-12',priority:'urgent',slot:'2',done:false,description:'아마존 판넬 4종 PC버전. 이후 모바일 사이즈 베리에이션 예정'},
-    {name:'수출효소 단상자 수정',sub:'김도연',start_date:'2026-08-12',due:'2026-08-13',priority:'urgent',slot:'2',done:false,description:'수출효소 단상자 영문 수정 전달'},
-    {name:'네이버 헬시페스타 배너',sub:'은균',start_date:'2026-08-12',due:'2026-08-13',priority:'normal',slot:'2',done:false,description:'W:\\공용 드라이브\\커머스사업부\\브랜드디자인팀\\업무전달\\260811_네이버 8월 헬시페스타 배너 제작\n오후 5시까지 전달'},
-    {name:'바엘 상세페이지 영문',sub:'김은채',start_date:'2026-08-12',due:'2026-08-14',priority:'normal',slot:'2',done:false,description:'W:\\공용 드라이브\\01. 공용\\바엘\\제품 상세페이지 및 누끼, 로고\\★상세페이지\\광채 크림 앰플\\광채 크림 앰플 50ml 상세페이지\n바엘 상세페이지 번역본'},
-    {name:'일본 리센느 광고소재',sub:'이수연',start_date:'2026-08-11',due:'2026-08-13',priority:'normal',slot:'2',done:false,description:'리센느 일본 바리에이션'},
-    {name:'골드파로 수출용 수정',sub:'하영',start_date:'2026-08-18',due:'2026-08-18',priority:'normal',slot:'2',done:false,description:'골드파로 수출용 수정'},
-    {name:'아마존 판넬 모바일',sub:'김도연',start_date:'2026-08-13',due:'2026-08-14',priority:'normal',slot:'2',done:false,description:'아마존 판넬 모바일 사이즈 베리에이션'},
-    {name:'바엘 정보고시 배너',sub:'정자윤',start_date:'2026-08-18',due:'2026-08-20',priority:'normal',slot:'2',done:false,description:'W:\\공용 드라이브\\커머스사업부\\브랜드디자인팀\\업무전달\\20260811_바엘 정보고시배너\n14시 이전 전달'},
-  ];
-  const {data} = await sb.from('tasks').insert(seed.map(s=>({...s,description:s.description||''}))).select();
-  tasks = (data||[]).map(r=>({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done}));
+async function reloadSubs(){
+  const {data} = await sb.from('subscriptions').select('id,no,team_id').eq('client_id',CLIENT_ID).order('no');
+  if(data){ subsRaw = data; await buildStaff(); renderStaff(); renderSlotTog(); renderLegend(); renderG(); renderRev(); renderRevSchedule(); }
 }
 
 // ── 탭 전환 ──
@@ -705,8 +745,9 @@ document.getElementById('nav-trash').onclick = () => swA('trash');
 document.getElementById('nav-stats').onclick = () => swA('stats');
 document.getElementById('nav-settings').onclick = () => swA('settings');
 document.getElementById('go-people').onclick = () => sw('people');
-document.getElementById('req-due').onchange = () => {onDue(); runC();};
-document.getElementById('req-type').onchange = () => {onType(); onDue(); runC();};
+document.getElementById('req-due').onchange = () => {if(document.getElementById('req-due').value!==autoDue) autoDue=''; onType(); onDue(); runC();};
+document.getElementById('req-type').onchange = () => {autoFillDue(); onType(); onDue(); runC();};
+document.getElementById('req-illust').onchange = () => {autoFillDue(); onType(); onDue(); runC();};
 document.getElementById('req-title').oninput = runC;
 document.getElementById('req-desc').oninput = runC;
 document.getElementById('req-person').onchange = runC;
@@ -870,10 +911,14 @@ function showPendingModal(p) {
     sw('form');
     setTimeout(()=>{
       document.getElementById('req-person').value=p.sub;
+      ensureTypeOption(p.type);
       document.getElementById('req-type').value=p.type;
+      const ILL='[일러스트 작업 포함] ', hadIllust=!!p.illust || (p.desc||'').startsWith(ILL);
+      document.getElementById('req-illust').checked=hadIllust && !!TI[p.type]?.illust;
+      autoDue='';
       document.getElementById('req-title').value=p.name;
       document.getElementById('req-due').value=p.due;
-      document.getElementById('req-desc').value=p.desc||'';
+      document.getElementById('req-desc').value=hadIllust?(p.desc||'').slice(ILL.length):(p.desc||'');
       setPri(p.priority); onDue(); onType(); runC();
       rejSilent(p.id);
     },100);
@@ -900,7 +945,7 @@ function showTaskModal(t) {
     <div class="modal-row">
       <div class="modal-field"><div class="modal-fl">담당자</div><div class="modal-fv">${esc(t.sub)}</div></div>
       <div class="modal-field"><div class="modal-fl">상태</div><div class="modal-fv"><span class="req-status ${t.done?'done-status':'conf-status'}">${t.done?'완료':'확정'}</span></div></div>
-      <div class="modal-field"><div class="modal-fl">구좌</div><div class="modal-fv">${sBadge(t.slot)}</div></div>
+      <div class="modal-field"><div class="modal-fl">구독</div><div class="modal-fv">${sBadge(t.slot)}</div></div>
       <div class="modal-field"><div class="modal-fl">납기일</div><div class="modal-fv">${t.due.replace(/-/g,'.')}</div></div>
       <div class="modal-field"><div class="modal-fl">시작일</div><div class="modal-fv">${t.start?t.start.replace(/-/g,'.'):'—'}</div></div>
       <div class="modal-field"><div class="modal-fl">우선순위</div><div class="modal-fv">${priBadge(t.priority)}</div></div>
@@ -933,7 +978,7 @@ function showTaskModal(t) {
     try {
     // 확정 작업을 pending으로 전환 (기존 요청 내용 · 드라이브 경로는 그대로 유지)
     const {data, error} = await sb.from('pending').insert([{
-      name: t.name, sub: t.sub, type: 'etc', due: t.due,
+      client_id: CLIENT_ID, name: t.name, sub: t.sub, type: 'etc', due: t.due,
       priority: t.priority, description: t.desc||'', reg_at: TODAY
     }]).select();
     if(error || !data) {
@@ -965,9 +1010,10 @@ function showTaskModal(t) {
 
 // ── 비즈니스 로직 (Supabase Auth 기반 — 콘솔에서 계정·RLS 설정을 마쳐야 실제로 잠겨요) ──
 // 새로고침해도 로그인 상태가 유지되도록, 시작할 때 기존 세션이 있는지 확인
+const isAbbgSession = ss => !!ss && !ss.user?.is_anonymous && ss.user?.email === ABBG_EMAIL;
 async function checkSession() {
   const { data } = await sb.auth.getSession();
-  unlocked = !!data?.session;
+  unlocked = isAbbgSession(data?.session);
   initNotif();
   if(unlocked) updTrashBadge();
   // 세션 확인이 늦게 끝나는 사이 사용자가 먼저 검토·확정/설정을 눌러 잠금 화면이 떠 있었다면,
@@ -977,9 +1023,12 @@ async function checkSession() {
   }
 }
 // 다른 탭/창에서 로그인·로그아웃해도 상태를 맞춰줌
-sb.auth.onAuthStateChange((_event, session) => {
+sb.auth.onAuthStateChange((event, session) => {
+  // 다른 탭에서 ABBG 로그아웃 → 링크 접속으로 다시 시작
+  if(event === 'SIGNED_OUT' && CLIENT_ID) { setTimeout(() => location.reload(), 0); return; }
   const wasUnlocked = unlocked;
-  unlocked = !!session;
+  unlocked = isAbbgSession(session);
+  if(unlocked !== wasUnlocked && CLIENT_ID) setTimeout(reloadSubs, 0);
   syncNotifVisibility();
   if(unlocked && !wasUnlocked && document.getElementById('page-lock')?.classList.contains('active')) {
     sw(pTarget||'review');
@@ -1000,6 +1049,7 @@ async function tryU() {
       return;
     }
     unlocked = true;
+    reloadSubs();
     document.getElementById('lock-err').classList.remove('show');
     syncNotifVisibility();
     sw(pTarget||'review'); showT('ABBG 인증됐어요!');
@@ -1070,13 +1120,68 @@ function onDue() {
     sug.classList.remove('show'); sug.innerHTML='';
   }
 }
+
+// ── 작업 유형 드롭다운 (대분류별 묶음 + 이 기기에서 자주 요청한 작업 3개) ──
+const recentKey = () => 'abbg-recent-types:' + (CLIENT_ID||'');
+function recentTypes(){
+  try { const c = JSON.parse(localStorage.getItem(recentKey())||'{}');
+    return Object.entries(c).filter(([k])=>WORK_TYPES.some(t=>t.key===k)).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
+  } catch(e){ return []; }
+}
+function rememberType(key){
+  try { const c = JSON.parse(localStorage.getItem(recentKey())||'{}'); c[key]=(c[key]||0)+1; localStorage.setItem(recentKey(), JSON.stringify(c)); } catch(e){}
+}
+function buildTypeSelect(){
+  const sel = document.getElementById('req-type');
+  const cur = sel.value;
+  const opt = (t,label) => `<option value="${t.key}">${esc(label||t.name)} (${fmtDays(t)})</option>`;
+  let html = '<option value="">유형 선택</option>';
+  const rec = recentTypes();
+  if(rec.length) html += `<optgroup label="자주 요청한 작업">${rec.map(k=>{const t=WORK_TYPES.find(x=>x.key===k); return opt(t, TI[k].name);}).join('')}</optgroup>`;
+  [...new Set(WORK_TYPES.map(t=>t.cat))].forEach(cat=>{
+    html += `<optgroup label="${esc(cat)}">${WORK_TYPES.filter(t=>t.cat===cat).map(t=>opt(t)).join('')}</optgroup>`;
+  });
+  sel.innerHTML = html;
+  if(cur) { ensureTypeOption(cur); sel.value = cur; }
+}
+// 예전 유형으로 등록된 요청을 수정할 때 목록에 없으면 '이전 유형'으로 붙여줌
+function ensureTypeOption(key){
+  const sel = document.getElementById('req-type');
+  if(!key || [...sel.options].some(o=>o.value===key) || !TI[key]) return;
+  let g = sel.querySelector('optgroup[data-legacy]');
+  if(!g){ g=document.createElement('optgroup'); g.label='이전 유형'; g.dataset.legacy='1'; sel.appendChild(g); }
+  const o=document.createElement('option'); o.value=key; o.textContent=`${TI[key].name} (${TI[key].days})`; g.appendChild(o);
+}
+// 일러스트 옵션까지 반영한 최소·최대 소요일
+const withIllust = type => !!(TI[type]?.illust && document.getElementById('req-illust').checked);
+const effMin = type => (TI[type]?.minDays||0) + (withIllust(type)?1:0);
+const effMax = type => TI[type]?.maxDays==null ? null : TI[type].maxDays + (withIllust(type)?1:0);
+// 오늘부터 영업일 n일 뒤 (0이면 오늘, 오늘이 휴일이면 다음 영업일)
+function addWD(n){ let d = isO(TODAY)?nWD(TODAY):TODAY; for(let i=0;i<n;i++) d=nWD(d); return d; }
+let autoDue = ''; // 자동으로 채운 납기일 — 사용자가 직접 바꾸면 더 이상 덮어쓰지 않음
+function autoFillDue(){
+  const type=document.getElementById('req-type').value, dueEl=document.getElementById('req-due');
+  const max = effMax(type);
+  if(!type || max==null) return;
+  if(dueEl.value && dueEl.value!==autoDue) return;
+  autoDue = addWD(max); dueEl.value = autoDue;
+}
+buildTypeSelect();
 function onType() {
   const val=document.getElementById('req-type').value; const h=document.getElementById('type-hint');
+  const iw=document.getElementById('illust-wrap');
+  iw.hidden = !(val && TI[val]?.illust);
+  if(iw.hidden) document.getElementById('req-illust').checked=false;
   if(!val||!TI[val]){h.classList.remove('show'); return;}
   const i=TI[val];
-  document.getElementById('h-nm').textContent=i.name; document.getElementById('h-days').textContent='⏱ '+i.days;
-  document.getElementById('h-exs').innerHTML=i.ex.map(e=>`<span class="th-ex">${e}</span>`).join('');
-  document.getElementById('h-note').textContent='※ '+i.note; h.classList.add('show');
+  const days = i.inquiry ? i.days : fmtDays({min:effMin(val),max:effMax(val)});
+  document.getElementById('h-nm').textContent=i.name; document.getElementById('h-days').textContent='⏱ '+days;
+  document.getElementById('h-exs').innerHTML=(i.ex||[]).map(e=>`<span class="th-ex">${esc(e)}</span>`).join('');
+  const due=document.getElementById('req-due').value;
+  const autoMsg = (!i.inquiry && due && due===autoDue) ? `희망 납기일을 ${due.replace(/-/g,'.')}(소요일 기준)로 채웠어요. 더 필요하면 직접 바꿔주세요.` : '';
+  const notes=[i.note, autoMsg].filter(Boolean);
+  document.getElementById('h-note').innerHTML=notes.map(n=>'※ '+esc(n)).join('<br>');
+  h.classList.add('show');
 }
 function setPri(p) {
   fPri=p; ['urgent','normal','low'].forEach(k=>document.getElementById('p-'+k).className='pbtn'+(p===k?' sel-'+k:'')); onDue(); runC();
@@ -1086,7 +1191,7 @@ function runC() {
   const checks=[];
   if(due&&isPast(due)) checks.push({ic:'🚫',m:'과거 날짜는 납기일로 지정할 수 없어요',s:'오늘 이후 날짜를 선택해주세요.'});
   if(due&&isO(due)&&!isPast(due)) checks.push({ic:'🚫',m:`선택한 날짜는 공휴일/휴무일이에요`,s:'다음 영업일 '+nWD(due).replace(/-/g,'.')+'으로 변경해주세요.'});
-  if(due&&type&&TI[type]&&!isPast(due)&&!isO(due)){const days=wdB(TODAY,due),min=TI[type].minDays; if(days<min) checks.push({ic:'⏰',m:`납기까지 영업일이 ${days}일뿐이에요 (최소 ${min}일 필요)`,s:'ABBG 확인 후 가능 여부를 안내드릴게요.'});}
+  if(due&&type&&TI[type]&&!TI[type].inquiry&&!isPast(due)&&!isO(due)){const days=wdB(TODAY,due),min=effMin(type); if(days<min) checks.push({ic:'⏰',m:`납기까지 영업일이 ${days}일뿐이에요 (최소 ${min}일 필요)`,s:'ABBG 확인 후 가능 여부를 안내드릴게요.'});}
   if(due&&!isO(due)&&!isPast(due)){const dDay=tasks.filter(t=>!t.done&&t.due===due); if(dDay.length>=3) checks.push({ic:'📦',m:`${due.replace(/-/g,'.')} 이미 마감 예정 ${dDay.length}건이에요`,s:'납기 조정을 권장해요.'});}
   if(due&&type&&!isPast(due)&&!isO(due)){
     const items=urgentItemsOn(due), cap=capFor(type), projected=items.length+(fPri==='urgent'?1:0);
@@ -1110,21 +1215,24 @@ async function submitReq() {
   if(!person||!type||!title||!due||!fPri){alert('필수 항목을 모두 입력해주세요.'); return;}
   if(isPast(due)){alert('과거 날짜예요.'); return;}
   if(isO(due)){alert('공휴일/휴무일이에요.'); return;}
-  if(type&&TI[type]&&TI[type].minDays>0){
-    const days=wdB(TODAY,due);
-    if(days<TI[type].minDays && !confirm(`납기까지 영업일이 ${days}일뿐이에요.\n최소 ${TI[type].minDays}일이 필요해요. 그래도 등록할까요?`)) return;
+  if(type&&TI[type]&&!TI[type].inquiry&&effMin(type)>0){
+    const days=wdB(TODAY,due), min=effMin(type);
+    if(days<min && !confirm(`납기까지 영업일이 ${days}일뿐이에요.\n최소 ${min}일이 필요해요. 그래도 등록할까요?`)) return;
   }
+  const illust = withIllust(type);
   const btn=document.getElementById('submit-btn'); btn.disabled=true;
   let data, error;
   try {
-    ({data,error} = await sb.from('pending').insert([{name:title,sub:person,type,due,priority:fPri,description:desc,reg_at:TODAY}]).select());
+    ({data,error} = await sb.from('pending').insert([{client_id:CLIENT_ID,name:title,sub:person,type,due,priority:fPri,description:desc,reg_at:TODAY,illust}]).select());
   } finally {
     btn.disabled=false;
   }
   if(error){alert('등록 실패: '+error.message); return;}
-  pending.push({id:data[0].id,name:title,sub:person,type,due,priority:fPri,desc,regAt:TODAY});
+  pending.push({id:data[0].id,name:title,sub:person,type,due,priority:fPri,desc,regAt:TODAY,illust});
+  rememberType(type); buildTypeSelect(); autoDue='';
   updB(); showT('요청 등록됐어요! ABBG 검토 후 확정돼요.');
   ['req-person','req-type','req-title','req-due','req-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('req-illust').checked=false; document.getElementById('illust-wrap').hidden=true;
   document.getElementById('type-hint').classList.remove('show'); document.getElementById('due-panel').classList.remove('show'); document.getElementById('check-panel').classList.remove('show');
   document.getElementById('due-suggest').classList.remove('show'); document.getElementById('due-suggest').innerHTML='';
   fPri=''; ['urgent','normal','low'].forEach(k=>document.getElementById('p-'+k).className='pbtn');
@@ -1192,7 +1300,7 @@ function renderRevSchedule() {
 
   // 헤더
   let html = '<div style="overflow-x:auto;margin-bottom:4px;"><table class="gt" style="min-width:600px;">';
-  html += '<thead><tr><th style="min-width:110px;font-size:10px;">작업명</th><th style="width:50px;font-size:10px;">구좌</th>';
+  html += '<thead><tr><th style="min-width:110px;font-size:10px;">작업명</th><th style="width:50px;font-size:10px;">구독</th>';
   days.forEach((d,i) => {
     const ds2 = fmt(d);
     const off = isO(ds2);
@@ -1284,7 +1392,7 @@ function renderRev() {
         <div class="pend-f pend-ff"><div class="pend-fl">요청 내용 · 드라이브 경로</div><div class="pend-fv" style="white-space:pre-wrap;line-height:1.6;">${esc(p.desc)||'—'}</div></div>
       </div>
       <div class="rc-asgn">
-        <div><div class="rc-al">구좌 배정</div><select id="slot-${p.id}"><option value="">선택</option>${staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
+        <div><div class="rc-al">구독 배정</div><select id="slot-${p.id}"><option value="">선택</option>${staff.map(s=>`<option value="${s.id}"${staff.length===1?' selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
         <div><div class="rc-al">확정 납기일</div><input type="date" id="cdue-${p.id}" value="${p.due}" min="${TODAY}"></div>
         <div><div class="rc-al">시작일 (자동, 수정 가능)</div><input type="date" id="cstart-${p.id}" max="${p.due}"></div>
       </div>
@@ -1350,16 +1458,18 @@ async function appR(id) {
   if(apBtn) apBtn.disabled=true; if(rjBtn) rjBtn.disabled=true;
   try {
     const slot=document.getElementById('slot-'+id)?.value, cdue=document.getElementById('cdue-'+id)?.value, cstart=document.getElementById('cstart-'+id)?.value;
-    if(!slot){alert('구좌를 선택해주세요.'); return;}
+    if(!slot){alert('구독을 선택해주세요.'); return;}
+    const sub = staff.find(x=>String(x.id)===String(slot));
+    if(sub && !sub.team_id){ alert(`구독 ${sub.no}에 연결된 팀원이 없어요.\n관리 화면의 '구독·담당자'에서 먼저 지정해 주세요.`); return; }
     if(!cdue){alert('납기일을 입력해주세요.'); return;}
     if(isO(cdue)){alert('공휴일/휴무일이에요.'); return;}
     if(cstart && cstart>cdue){alert('시작일이 납기일보다 늦을 수 없어요.'); return;}
     const start = cstart||cdue;
-    // 같은 구좌에서 작업 기간이 겹치는 확정 작업이 있으면 승인 전에 경고
+    // 같은 구독에서 작업 기간이 겹치는 확정 작업이 있으면 승인 전에 경고
     const conflicts = tasks.filter(t=>!t.done && t.slot===slot && t.start<=cdue && t.due>=start);
     if(conflicts.length){
       const list = conflicts.map(t=>`· ${t.name} (${t.start.replace(/-/g,'.')}~${t.due.replace(/-/g,'.')})`).join('\n');
-      if(!confirm(`${slot}구좌에 기간이 겹치는 작업이 있어요:\n${list}\n\n그래도 승인할까요?`)) return;
+      if(!confirm(`구독 ${slotIdx(slot)}에 기간이 겹치는 작업이 있어요:\n${list}\n\n그래도 승인할까요?`)) return;
     }
     // pending을 먼저 삭제 → 동시에 두 명이 같은 요청을 승인하려 해도
     // 첫 번째 사람만 성공하고 두 번째는 "이미 처리됨" 처리됨
@@ -1373,7 +1483,7 @@ async function appR(id) {
     const { data: stillExists } = await sb.from('pending').select('id').eq('id',id).maybeSingle();
     // maybeSingle은 없으면 null 반환 — delete가 성공했으니 stillExists는 항상 null
     // (위 delete가 성공했으면 row가 지워진 것이므로 tasks 생성으로 진행)
-    const {data,error} = await sb.from('tasks').insert([{name:p.name,sub:p.sub,start_date:start,due:cdue,priority:p.priority,slot,done:false,description:p.desc||''}]).select();
+    const {data,error} = await sb.from('tasks').insert([{client_id:CLIENT_ID,sub_id:Number(slot),name:p.name,sub:p.sub,start_date:start,due:cdue,priority:p.priority,done:false,description:(p.illust?'[일러스트 작업 포함] ':'')+(p.desc||'')}]).select();
     if(error){
       alert('스케줄 등록에 실패했어요: '+error.message+'\n요청이 대기 목록에서 제거됐으니 새로고침 후 직접 tasks에 추가해주세요.');
       return;
@@ -1406,7 +1516,8 @@ async function toggleDone(id, opts) {
   const prev = t.done;
   t.done = !t.done;
   renderRev(); renderG(); renderReqList(); renderRevSchedule();
-  const { error } = await sb.from('tasks').update({done:t.done}).eq('id',id);
+  const doneSub = staff.find(x=>String(x.id)===String(t.slot));
+  const { error } = await sb.from('tasks').update({done:t.done, done_at:t.done?new Date().toISOString():null, done_team_id:t.done&&doneSub?doneSub.team_id:null}).eq('id',id);
   if(error){
     t.done = prev; // 실패 시 되돌림
     renderRev(); renderG(); renderReqList(); renderRevSchedule();
@@ -1445,8 +1556,8 @@ async function restoreItem(table, id) {
 async function updTrashBadge() {
   if(!unlocked) return;
   const [tp, tt] = await Promise.all([
-    sb.from('pending').select('id', {count:'exact',head:true}).not('deleted_at','is',null),
-    sb.from('tasks').select('id', {count:'exact',head:true}).not('deleted_at','is',null)
+    sb.from('pending').select('id', {count:'exact',head:true}).eq('client_id',CLIENT_ID).not('deleted_at','is',null),
+    sb.from('tasks').select('id', {count:'exact',head:true}).eq('client_id',CLIENT_ID).not('deleted_at','is',null)
   ]);
   const n = (tp.count||0) + (tt.count||0);
   const nb = document.getElementById('nb-trash');
@@ -1457,8 +1568,8 @@ async function updTrashBadge() {
 async function renderTrash() {
   if(!unlocked) return;
   const [tp, tt] = await Promise.all([
-    sb.from('pending').select('*').not('deleted_at','is',null).order('deleted_at', {ascending:false}),
-    sb.from('tasks').select('*').not('deleted_at','is',null).order('deleted_at', {ascending:false})
+    sb.from('pending').select('*').eq('client_id',CLIENT_ID).not('deleted_at','is',null).order('deleted_at', {ascending:false}),
+    sb.from('tasks').select('*').eq('client_id',CLIENT_ID).not('deleted_at','is',null).order('deleted_at', {ascending:false})
   ]);
   const pEl = document.getElementById('trash-pending-list');
   if(pEl) {
@@ -1491,7 +1602,7 @@ async function renderTrash() {
         return `<div class="trash-item">
           <div class="trash-item-info">
             <div class="trash-item-name">${esc(t.name)}</div>
-            <div class="trash-item-meta">담당자 ${esc(t.sub||'')}${sn?' · 구좌 '+esc(sn):''} · 납기 ${(t.due||'').replace(/-/g,'.')} · 삭제 ${delAt}</div>
+            <div class="trash-item-meta">담당자 ${esc(t.sub||'')}${sn?' · 구독 '+esc(sn):''} · 납기 ${(t.due||'').replace(/-/g,'.')} · 삭제 ${delAt}</div>
           </div>
           <div class="trash-item-btns">
             <button class="trash-restore" data-table="tasks" data-id="${t.id}"><i class="ti ti-arrow-back-up"></i> 복원</button>
@@ -1531,7 +1642,7 @@ async function trashPermDelete(table, id) {
 async function trashEmptyAll(table) {
   const label = table==='pending'?'삭제된 요청 전체':'삭제된 작업 전체';
   if(!(await confirmDanger(`${label}를 완전 삭제할까요? 복원할 수 없어요.`, {title:'전체 완전 삭제', okLabel:'전체 삭제'}))) return;
-  const {error} = await sb.from(table).delete().not('deleted_at','is',null);
+  const {error} = await sb.from(table).delete().eq('client_id',CLIENT_ID).not('deleted_at','is',null);
   if(error){ showT('삭제 실패: '+error.message); return; }
   showT('전체 완전 삭제됐어요.'); renderTrash();
 }
@@ -1543,8 +1654,8 @@ async function renderStats() {
   if(!el) return;
   el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--t3);font-size:13px;">통계 불러오는 중...</div>';
   const [allTasks, allPending] = await Promise.all([
-    sb.from('tasks').select('*').order('created_at'),
-    sb.from('pending').select('*').order('created_at')
+    sb.from('tasks').select('*').eq('client_id',CLIENT_ID).order('created_at'),
+    sb.from('pending').select('*').eq('client_id',CLIENT_ID).order('created_at')
   ]);
   const allData = [
     ...(allTasks.data||[]).map(r=>({...r,_src:'tasks'})),
@@ -1661,7 +1772,7 @@ async function addP() {
   const btn=document.getElementById('btn-add-person');
   btn.disabled=true;
   try {
-    const { error } = await sb.from('people').insert([{name:n}]);
+    const { error } = await sb.from('people').insert([{client_id:CLIENT_ID,name:n}]);
     if(error){ showT('추가 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     people.push(n); inp.value=''; renderP(); showT(n+' 추가됐어요!');
   } finally {
@@ -1671,7 +1782,7 @@ async function addP() {
 async function rmP(i) {
   if(!(await confirmDanger(`"${people[i]}" 담당자를 삭제할까요?`, {title:'담당자 삭제'}))) return;
   const n=people[i];
-  const { error } = await sb.from('people').delete().eq('name',n);
+  const { error } = await sb.from('people').delete().eq('client_id',CLIENT_ID).eq('name',n);
   if(error){ showT('삭제 실패: '+error.message+' — 다시 시도해주세요.'); return; }
   people.splice(i,1); renderP(); showT(n+' 삭제됐어요.');
 }
@@ -1705,7 +1816,7 @@ async function renameP(i, newName) {
   const btn = document.getElementById('rename-person-ok');
   btn.disabled=true; btn.textContent='저장 중...';
   try {
-    const { error } = await sb.from('people').update({name:newName}).eq('name',oldName);
+    const { error } = await sb.from('people').update({name:newName}).eq('client_id',CLIENT_ID).eq('name',oldName);
     if(error){ showT('수정 실패: '+error.message+' — 다시 시도해주세요.'); return; }
     people[i] = newName;
     closeRenamePersonModal();
@@ -1714,7 +1825,7 @@ async function renameP(i, newName) {
     btn.disabled=false; btn.textContent='저장';
   }
 }
-// ── 구좌 담당자 (ABBG 전용 — 추가/삭제하면 스케줄 필터·범례·구좌 배정 목록에 바로 반영돼요) ──
+// ── 구독 담당자 (ABBG 전용 — 추가/삭제하면 스케줄 필터·범례·구독 배정 목록에 바로 반영돼요) ──
 let _renameTargetId = null;
 function openRenameModal(id) {
   const s = staff.find(x=>x.id===id); if(!s) return;
@@ -1785,7 +1896,7 @@ async function rmStaff(id) {
   const s = staff.find(x=>x.id===id); if(!s) return;
   const inUse = tasks.some(t=>!t.done && String(t.slot)===String(id));
   const msg = inUse
-    ? `"${s.name}" 담당자는 진행 중인 작업에 배정돼 있어요. 그래도 삭제할까요?\n(기존 작업의 구좌 표시는 유지되지만 목록·필터에서는 빠져요)`
+    ? `"${s.name}" 담당자는 진행 중인 작업에 배정돼 있어요. 그래도 삭제할까요?\n(기존 작업의 구독 표시는 유지되지만 목록·필터에서는 빠져요)`
     : `"${s.name}" 담당자를 삭제할까요?`;
   if(!(await confirmDanger(msg, {title:'담당자 삭제'}))) return;
   const { error } = await sb.from('staff').delete().eq('id',id);
@@ -1798,7 +1909,7 @@ async function rmStaff(id) {
 function renderO() {
   document.getElementById('offgrid').innerHTML=offDays.length===0
     ?'<span style="font-size:11px;color:var(--text-muted)">등록된 휴무일 없음</span>'
-    :offDays.sort().map((d,i)=>`<div class="chip chip-off">${d.replace(/-/g,'.')}<button class="chip-x" data-i="${i}" type="button" style="border-color:#D85A30;color:#D85A30;">×</button></div>`).join('');
+    :offDays.sort().map((d,i)=>`<div class="chip chip-off">${d.replace(/-/g,'.')}</div>`).join('');
   document.querySelectorAll('#offgrid .chip-x').forEach(btn=>btn.onclick=()=>rmO(+btn.dataset.i));
 }
 async function addO() {
@@ -1831,7 +1942,7 @@ function setSl(s) {
   renderSlotTog();
   renderG();
 }
-// 구좌 필터 버튼(전체 + 담당자별) — staff 배열이 바뀔 때마다 다시 그림
+// 구독 필터 버튼(전체 + 담당자별) — staff 배열이 바뀔 때마다 다시 그림
 function renderSlotTog() {
   const el = document.getElementById('slot-tog');
   if(!el) return;
@@ -1863,7 +1974,7 @@ function renderLegend() {
 function renderG() {
   const days=getWD(wkOff); const ts=TODAY;
   document.getElementById('wk-lbl').textContent=`${days[0].getMonth()+1}/${days[0].getDate()} – ${days[4].getMonth()+1}/${days[4].getDate()}`;
-  document.getElementById('gh').innerHTML='<tr><th style="min-width:100px;">작업명</th><th style="width:64px;">구좌</th>'+
+  document.getElementById('gh').innerHTML='<tr><th style="min-width:100px;">작업명</th><th style="width:64px;">구독</th>'+
     days.map((d,i)=>{const ds=fmt(d); const off=isO(ds); const isT=ds===ts&&!off; const overload=!off&&urgentDueOn(ds).length>=CAP_FRIENDLY_MAX;
       const holName = off ? gOL(ds) : '';
       const thTitle = off ? holName : overload ? '급건 캐파 초과 — 일정 조율 필요' : '';
@@ -2035,10 +2146,12 @@ function syncNotifVisibility() {
 }
 
 function setupRealtime() {
-  const mapPending = r => ({id:r.id,name:r.name,sub:r.sub,type:r.type,due:r.due,priority:r.priority,desc:r.description,regAt:r.reg_at});
-  const mapTask = r => ({id:r.id,name:r.name,sub:r.sub,start:r.start_date,due:r.due,priority:r.priority,slot:r.slot,done:r.done,desc:r.description||''});
+  const mapPending = mapPendingRow, mapTask = mapTaskRow;
+  // ABBG 계정은 모든 클라이언트의 변경을 받으므로, 이 클라이언트 것만 반영
+  const other = pl => pl.new && pl.new.client_id && pl.new.client_id !== CLIENT_ID;
 
   sb.channel('rt-pending').on('postgres_changes', {event:'*', schema:'public', table:'pending'}, payload => {
+    if(other(payload)) return;
     if(payload.eventType==='DELETE') {
       removeLocalById(pending, payload.old.id);
     } else if(payload.new.deleted_at) {
@@ -2058,6 +2171,7 @@ function setupRealtime() {
   }).subscribe();
 
   sb.channel('rt-tasks').on('postgres_changes', {event:'*', schema:'public', table:'tasks'}, payload => {
+    if(other(payload)) return;
     if(payload.eventType==='DELETE') {
       removeLocalById(tasks, payload.old.id);
     } else if(payload.new.deleted_at) {
@@ -2071,6 +2185,7 @@ function setupRealtime() {
   }).subscribe();
 
   sb.channel('rt-people').on('postgres_changes', {event:'*', schema:'public', table:'people'}, payload => {
+    if(other(payload)) return;
     if(payload.eventType==='DELETE') { const idx=people.indexOf(payload.old.name); if(idx>=0) people.splice(idx,1); }
     else if(!people.includes(payload.new.name)) people.push(payload.new.name);
     renderP();
@@ -2082,17 +2197,46 @@ function setupRealtime() {
     renderO(); renderG();
   }).subscribe();
 
-  sb.channel('rt-staff').on('postgres_changes', {event:'*', schema:'public', table:'staff'}, payload => {
-    if(payload.eventType==='DELETE') removeLocalById(staff, payload.old.id);
-    else upsertLocal(staff, payload.new, r=>({id:r.id,name:r.name}));
-    renderStaff(); renderSlotTog(); renderLegend(); renderG(); renderRev(); renderRevSchedule();
+  sb.channel('rt-subs').on('postgres_changes', {event:'*', schema:'public', table:'subscriptions'}, payload => {
+    if(other(payload)) return;
+    reloadSubs();
   }).subscribe();
 }
 
 // ── 초기 로드 ──
-checkSession();
-syncHolidaysFromAPI().then(() => { renderG(); }); // 최신 공휴일 반영되면 스케줄 다시 그림
-loadAll().then(() => { renderG(); setupRealtime(); });
+// 접속할 수 없을 때 화면 전체를 안내로 바꿈
+function showBlocked(kind){
+  const moved = kind === 'moved';
+  document.getElementById('app').innerHTML = `<div class="blocked-screen">
+    <div class="blocked-logo">ABBG</div>
+    <div class="blocked-t">${moved ? '주소가 바뀌었어요' : '현재 이용할 수 없는 페이지예요'}</div>
+    <div class="blocked-s">${moved ? 'ABBG에서 전달받은 새 링크로 접속해 주세요.<br>링크를 모르시면 ABBG 담당자에게 문의해 주세요.' : '링크가 만료됐거나 사용이 중지됐어요.<br>ABBG 담당자에게 문의해 주세요.'}</div>
+  </div>`;
+  document.title = 'ABBG 디자인 요청';
+}
+// 링크(/c/코드)로 들어와서 → 로그인이 없으면 보이지 않게 익명 로그인 → 이 클라이언트로 입장
+async function boot(){
+  const code = (location.pathname.match(/^\/c\/([A-Za-z0-9]+)/)||[])[1] || new URLSearchParams(location.search).get('c');
+  if(!code){ showBlocked('moved'); return; }
+  let { data: { session } } = await sb.auth.getSession();
+  if(!session){
+    const { data, error } = await sb.auth.signInAnonymously();
+    if(error){ showLoadError('접속 준비에 실패했어요: ' + error.message + ' — 새로고침해주세요.'); return; }
+    session = data.session;
+  }
+  const { data: joined, error: joinErr } = await sb.rpc('join_client', { p_code: code });
+  if(joinErr){ showLoadError('접속 확인에 실패했어요: ' + joinErr.message + ' — 새로고침해주세요.'); return; }
+  if(!joined || !joined.length){ showBlocked('closed'); return; }
+  CLIENT_ID = joined[0].id; CLIENT_NAME = joined[0].name;
+  renderClientTitle();
+  await checkSession();
+  syncHolidaysFromAPI().then(() => { renderG(); }); // 최신 공휴일 반영되면 스케줄 다시 그림
+  await loadAll();
+  renderG(); setupRealtime();
+  // 관리 화면에서 '페이지 열기'로 들어오면 검토 화면부터
+  if(location.hash === '#review' && unlocked) sw('review');
+}
+boot();
 </script>
 </body>
 </html>

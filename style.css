@@ -580,3 +580,27 @@ input::placeholder,textarea::placeholder{color:var(--t3);}
 .stats-bar-wrap{display:flex;align-items:center;gap:8px;min-width:120px;}
 .stats-bar-fill{height:7px;border-radius:4px;min-width:2px;transition:width .3s;}
 .stats-bar-label{font-size:12px;color:var(--t2);font-weight:600;white-space:nowrap;}
+
+/* ══ 클라이언트명 × ABBG 상단 고정 표시 ══ */
+.client-bar{position:sticky;top:0;z-index:40;display:flex;align-items:center;height:44px;padding:0 36px;background:var(--surface);border-bottom:1px solid var(--border);}
+.client-bar .client-title{width:100%;max-width:880px;margin:0 auto;font-size:var(--fs-sm);font-weight:700;color:var(--t1);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:768px){
+  .client-bar{display:none;}
+  .mob-hd{position:sticky;top:0;z-index:90;}
+  .mob-logo.client-title{font-size:15px;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+}
+
+/* 작업 유형: 일러스트 옵션 */
+.illust-opt{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:var(--fs-sm);font-weight:600;color:var(--t2);cursor:pointer;}
+.illust-opt[hidden]{display:none;}
+.illust-opt span{font-weight:400;color:var(--t3);}
+.illust-opt input{width:16px;height:16px;accent-color:var(--c1);}
+
+/* 숨김 속성이 display 지정보다 우선하도록 */
+[hidden]{display:none !important;}
+
+/* 링크가 없거나 사용 중지된 경우 안내 화면 */
+.blocked-screen{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;background:var(--bg);}
+.blocked-logo{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--t1);margin-bottom:28px;}
+.blocked-t{font-size:var(--fs-lg);font-weight:700;color:var(--t1);margin-bottom:8px;}
+.blocked-s{font-size:var(--fs-sm);color:var(--t3);line-height:1.7;}

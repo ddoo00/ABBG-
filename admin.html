@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>ABBG 관리 화면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+<div class="app" id="app">
+
+<div class="mob-hd">
+  <div class="mob-logo">ABBG</div>
+  <div class="mob-pg" id="mpg">클라이언트</div>
+  <button class="icon-btn" id="mob-notif-btn" type="button" aria-label="알림"><i class="ti ti-bell"></i><span class="notif-badge" id="mob-notif-badge"></span></button>
+</div>
+
+<nav class="sidebar" aria-label="관리 메뉴">
+  <div class="sb-logo">
+    <div class="sb-logo-row">
+      <div class="sb-brand">ABBG<small>관리 화면</small></div>
+      <button class="notif-btn sb-notif-btn" id="notif-btn" type="button" aria-label="알림">
+        <i class="ti ti-bell"></i><span class="notif-badge" id="notif-badge"></span>
+      </button>
+    </div>
+  </div>
+  <div class="sb-sec">
+    <div class="ni active" data-page="clients" tabindex="0"><i class="ti ti-building-store"></i>클라이언트<span class="nb" id="nb-clients"></span></div>
+    <div class="ni" data-page="workload" tabindex="0"><i class="ti ti-chart-bar"></i>담당자 현황</div>
+    <div class="ni" data-page="team" tabindex="0"><i class="ti ti-users"></i>팀원 명단</div>
+    <div class="ni" data-page="offdays" tabindex="0"><i class="ti ti-calendar-off"></i>휴무일</div>
+    <div class="ni" data-page="settings" tabindex="0"><i class="ti ti-settings"></i>설정</div>
+  </div>
+  <div class="sb-bottom">
+    <div class="ni" id="nav-logout" tabindex="0"><i class="ti ti-logout"></i>로그아웃</div>
+  </div>
+</nav>
+
+<div class="notif-drop a-notif" id="notif-drop" role="dialog" aria-label="알림">
+  <div class="notif-hd">
+    <span class="notif-hd-t">새 요청</span>
+    <button class="notif-clear" id="notif-clear" type="button">모두 확인</button>
+  </div>
+  <div class="notif-list" id="notif-list"></div>
+</div>
+
+<main class="main">
+  <div class="content">
+
+    <div class="demo-bar" id="demo-bar" hidden>
+      <span><b>데모 데이터로 동작 중이에요.</b> Supabase를 나누기 전까지는 이 브라우저에만 저장돼요.</span>
+      <button type="button" id="demo-incoming">새 요청 받아보기</button>
+      <button type="button" id="demo-reset" style="margin-left:0">예시 데이터로 되돌리기</button>
+    </div>
+
+    <!-- 로그인 -->
+    <section class="page" id="page-lock">
+      <div class="lock-screen">
+        <i class="ti ti-lock"></i>
+        <div class="lock-t">ABBG 관리 화면</div>
+        <div class="lock-s">6자리 숫자 비밀번호를 입력해주세요.<span id="lock-demo-hint"></span></div>
+        <div class="lock-row">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" id="lock-pw" placeholder="6자리 숫자" aria-label="비밀번호">
+          <button class="lock-btn" id="lock-submit" type="button">확인</button>
+        </div>
+        <div class="lock-err" id="lock-err">비밀번호가 틀렸어요.</div>
+      </div>
+    </section>
+
+    <!-- 클라이언트 -->
+    <section class="page wide" id="page-clients">
+      <div class="pg-hd pg-hd-row">
+        <div>
+          <h1 class="pg-title">클라이언트</h1>
+          <p class="pg-sub">검토 대기가 많은 순서로 보여줘요.</p>
+        </div>
+        <button class="a-btn" id="btn-new-client" type="button"><i class="ti ti-plus"></i>새 클라이언트</button>
+      </div>
+      <div class="cc-grid" id="cc-grid"></div>
+      <div class="arch" id="arch">
+        <button class="arch-tog" id="arch-tog" type="button" aria-expanded="false"><i class="ti ti-chevron-right"></i><span id="arch-lbl">보관된 클라이언트</span></button>
+        <div class="arch-list" id="arch-list"></div>
+      </div>
+    </section>
+
+    <!-- 담당자 현황 -->
+    <section class="page wide" id="page-workload">
+      <div class="pg-hd">
+        <h1 class="pg-title">담당자 현황</h1>
+        <p class="pg-sub">팀원별로 모든 클라이언트의 업무를 합쳐서 보여줘요. 보관된 클라이언트는 빠져요.</p>
+      </div>
+      <div class="a-table-wrap"><table class="a-table" id="wl-table"></table></div>
+    </section>
+
+    <!-- 팀원 명단 -->
+    <section class="page" id="page-team">
+      <div class="pg-hd">
+        <h1 class="pg-title">팀원 명단</h1>
+        <p class="pg-sub">여기 등록된 팀원을 클라이언트 카드의 '구독·담당자'에서 연결해요.</p>
+      </div>
+      <div class="inline-add">
+        <input type="text" id="team-new" placeholder="팀원 이름" aria-label="새 팀원 이름">
+        <button class="a-btn" id="team-add" type="button">추가</button>
+      </div>
+      <div class="a-table-wrap" id="team-list"></div>
+    </section>
+
+    <!-- 휴무일 -->
+    <section class="page" id="page-offdays">
+      <div class="pg-hd">
+        <h1 class="pg-title">휴무일</h1>
+        <p class="pg-sub">ABBG 휴무일이에요. 모든 클라이언트의 스케줄과 납기 계산에 똑같이 적용돼요.</p>
+      </div>
+      <div class="inline-add">
+        <input type="date" id="off-new" aria-label="휴무일 날짜">
+        <button class="a-btn" id="off-add" type="button">추가</button>
+      </div>
+      <div class="a-table-wrap" id="off-list"></div>
+    </section>
+
+    <!-- 설정 -->
+    <section class="page" id="page-settings">
+      <div class="pg-hd">
+        <h1 class="pg-title">설정</h1>
+        <p class="pg-sub">ABBG 비밀번호는 관리 화면과 모든 클라이언트 페이지의 ABBG 메뉴에 함께 쓰여요.</p>
+      </div>
+      <div class="a-table-wrap" style="padding:20px;max-width:420px;">
+        <div class="modal-bd" style="padding:0;">
+          <div class="modal-field"><label class="modal-fl" for="pw-cur">현재 비밀번호</label><input type="password" inputmode="numeric" maxlength="6" id="pw-cur" autocomplete="off"></div>
+          <div class="modal-field"><label class="modal-fl" for="pw-new">새 비밀번호 (6자리 숫자)</label><input type="password" inputmode="numeric" maxlength="6" id="pw-new" autocomplete="off"></div>
+          <div class="modal-field"><label class="modal-fl" for="pw-cf">새 비밀번호 확인</label><input type="password" inputmode="numeric" maxlength="6" id="pw-cf" autocomplete="off"></div>
+          <div class="m-err" id="pw-msg"></div>
+          <div><button class="a-btn" id="pw-save" type="button">비밀번호 변경</button></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="mob-tb">
+  <button class="mtab active" data-page="clients"><i class="ti ti-building-store"></i><span class="mtab-lbl">클라이언트</span><span class="mtab-badge" id="mb-clients"></span></button>
+  <button class="mtab" data-page="workload"><i class="ti ti-chart-bar"></i><span class="mtab-lbl">현황</span></button>
+  <button class="mtab" data-page="team"><i class="ti ti-users"></i><span class="mtab-lbl">팀원</span></button>
+  <button class="mtab" data-page="offdays"><i class="ti ti-calendar-off"></i><span class="mtab-lbl">휴무일</span></button>
+  <button class="mtab" data-page="settings"><i class="ti ti-settings"></i><span class="mtab-lbl">설정</span></button>
+</div>
+
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="pop" id="pop"></div>
+<div class="toast" id="toast" role="status"></div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared.js"></script>
+<script src="/admin.js"></script>
+</body>
+</html>
