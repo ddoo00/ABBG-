@@ -2055,17 +2055,19 @@ function removeLocalById(arr, id) {
 
 // ── 알림 시스템 ──
 // 로그인 후 pending(검토 대기) 변경을 실시간으로 감지해 알림 드롭다운에 표시
-const NOTIF_KEY = 'abbg_notifs_v1';
+// 알림은 클라이언트별로 따로 저장 (같은 브라우저에서 여러 클라이언트 페이지를 열어도 섞이지 않게)
+const notifKey = () => 'abbg_notifs_v2:' + (CLIENT_ID || '');
+try { localStorage.removeItem('abbg_notifs_v1'); } catch {} // 예전 공용 알림 정리
 let _notifs = [];
 let _notifOpen = false;
 
 function loadNotifs() {
-  try { _notifs = JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch { _notifs = []; }
+  try { _notifs = JSON.parse(localStorage.getItem(notifKey()) || '[]'); } catch { _notifs = []; }
 }
 function saveNotifs() {
   // 최근 50개만 유지
   if(_notifs.length > 50) _notifs = _notifs.slice(-50);
-  try { localStorage.setItem(NOTIF_KEY, JSON.stringify(_notifs)); } catch {}
+  try { localStorage.setItem(notifKey(), JSON.stringify(_notifs)); } catch {}
 }
 function addNotif(msg, type='info') {
   if(!unlocked) return; // 로그인한 ABBG만 알림 수신
