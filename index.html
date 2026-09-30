@@ -929,7 +929,7 @@ function showPendingModal(p) {
     try {
       const error = await softDelete('pending', p.id);
       if(error){ showT('취소 실패: '+error.message+' — 다시 시도해주세요.'); return; }
-      pending.splice(pending.indexOf(p),1);
+      removeLocalById(pending, p.id);
       updB(); closeModal(); renderReqList(); renderRev(); renderG(); renderRevSchedule();
       updTrashBadge(); showT('요청이 취소됐어요. 복원이 필요하면 ABBG에 문의해주세요.');
     } finally {
@@ -989,7 +989,7 @@ function showTaskModal(t) {
       alert('요청 내용은 복사됐지만 기존 확정 작업 삭제에 실패했어요: '+delErr.message+'\n검토 탭에서 중복된 작업이 없는지 확인해주세요.');
     }
     tasks.splice(tasks.indexOf(t), 1);
-    pending.push({id:data[0].id, name:t.name, sub:t.sub, type:'etc',
+    pushUnique(pending, {id:data[0].id, name:t.name, sub:t.sub, type:'etc',
       due:t.due, priority:t.priority, desc:t.desc||'', regAt:TODAY});
     updB(); renderRev(); renderG(); renderReqList(); renderRevSchedule();
     closeModal();
@@ -1227,7 +1227,7 @@ async function submitReq() {
     btn.disabled=false;
   }
   if(error){alert('등록 실패: '+error.message); return;}
-  pending.push({id:data[0].id,name:title,sub:person,type,due,priority:fPri,desc,regAt:TODAY,illust});
+  pushUnique(pending, {id:data[0].id,name:title,sub:person,type,due,priority:fPri,desc,regAt:TODAY,illust});
   rememberType(type); buildTypeSelect(); autoDue='';
   updB(); showT('요청 등록됐어요! ABBG 검토 후 확정돼요.');
   ['req-person','req-type','req-title','req-due','req-desc'].forEach(id=>document.getElementById(id).value='');
@@ -1487,7 +1487,7 @@ async function appR(id) {
       alert('스케줄 등록에 실패했어요: '+error.message+'\n요청이 대기 목록에서 제거됐으니 새로고침 후 직접 tasks에 추가해주세요.');
       return;
     }
-    tasks.push({id:data[0].id,name:p.name,sub:p.sub,start,due:cdue,priority:p.priority,slot,done:false,desc:p.desc||''});
+    pushUnique(tasks, {id:data[0].id,name:p.name,sub:p.sub,start,due:cdue,priority:p.priority,slot,done:false,desc:p.desc||''});
     pending.splice(pending.indexOf(p),1);
     updB(); renderRev(); renderRevSchedule(); renderG(); renderReqList(); showT(p.name+' 승인됐어요!');
   } finally {
@@ -2047,6 +2047,11 @@ function upsertLocal(arr, row, mapFn) {
   const idx = arr.findIndex(x => x.id === mapped.id);
   if(idx >= 0) Object.assign(arr[idx], mapped);
   else arr.push(mapped);
+}
+// 실시간 알림이 저장 응답보다 먼저 도착해도 같은 항목이 두 번 들어가지 않게
+function pushUnique(arr, item) {
+  const idx = arr.findIndex(x => x.id === item.id);
+  if(idx >= 0) Object.assign(arr[idx], item); else arr.push(item);
 }
 function removeLocalById(arr, id) {
   const idx = arr.findIndex(x => x.id === id);
