@@ -5,7 +5,8 @@
 
 let data = null;          // 화면에 쓰는 전체 데이터 사본
 let current = 'clients';  // 현재 페이지
-const PAGE_NAMES = { clients: '클라이언트', workload: '담당자 현황', team: '팀원 명단', offdays: '휴무일', settings: '설정' };
+const PAGE_NAMES = { clients: '클라이언트', team: '팀원 명단', offdays: '휴무일', settings: '설정' };
+let clTab = 'active'; // 운영중 / 보관
 const MUTE_KEY = 'abbg-notif-muted'; // 이 기기에서 알림 끈 클라이언트 id 목록
 
 const $ = id => document.getElementById(id);
@@ -77,94 +78,95 @@ function render() {
   if (!data) return;
   renderBadges();
   if (current === 'clients') renderClients();
-  if (current === 'workload') renderWorkload();
   if (current === 'team') renderTeam();
   if (current === 'offdays') renderOffDays();
 }
 
-// ════════════ 클라이언트 목록 ════════════
+// ════════════ 클라이언트 목록 (표) ════════════
 function renderClients() {
-  const active = data.clients.filter(c => !c.archived)
-    .map(c => ({ c, s: clientStats(data, c.id) }))
-    .sort((a, b) => b.s.pending - a.s.pending || b.s.late - a.s.late || a.c.name.localeCompare(b.c.name, 'ko'));
+  const q = ($('cl-search').value || '').trim().toLowerCase();
+  const all = data.clients;
+  const active = all.filter(c => !c.archived), archived = all.filter(c => c.archived);
+  $('cnt-active').textContent = active.length;
+  $('cnt-archived').textContent = archived.length;
+  $('cl-count').textContent = `총 ${all.length}개`;
+  document.querySelectorAll('.cl-tab').forEach(t => { const on = t.dataset.tab === clTab; t.classList.toggle('active', on); t.setAttribute('aria-selected', on); });
+  const match = c => !q || c.name.toLowerCase().includes(q);
   const muted = mutedSet();
 
-  $('cc-grid').innerHTML = active.length ? active.map(({ c, s }) => {
-    const subs = s.subs.map(sub => {
-      const m = data.team.find(t => t.id === sub.team_id);
-      return m ? `<span class="sub-chip">구독 ${sub.no} <b>${esc(m.name)}</b></span>` : `<span class="sub-chip empty">구독 ${sub.no} 미연결</span>`;
-    }).join('');
-    const on = !muted.has(c.id);
-    return `
-    <article class="cc ${s.pending ? 'has-pend' : ''}" data-id="${c.id}">
-      <div class="cc-hd">
-        <div class="cc-name">${esc(c.name)}${s.unseen && on ? `<span class="cc-new">새 요청 ${s.unseen}</span>` : ''}</div>
-        <button class="icon-btn ${on ? '' : 'muted'}" data-act="mute" type="button" aria-pressed="${on}" aria-label="${on ? '이 기기에서 알림 끄기' : '이 기기에서 알림 켜기'}" title="${on ? '이 기기에서 알림 받는 중' : '이 기기에서 알림 꺼짐'}"><i class="ti ${on ? 'ti-bell' : 'ti-bell-off'}"></i></button>
-        <button class="icon-btn" data-act="more" type="button" aria-label="더보기"><i class="ti ti-dots"></i></button>
-      </div>
-      <div class="cc-main">
-        <div class="cc-pend ${s.pending ? '' : 'zero'}"><b>${s.pending}</b><span>검토 대기</span></div>
-        <div class="cc-kpi"><b>${s.open}</b><span>진행 중</span></div>
-        ${s.late ? `<div class="cc-kpi late"><b>${s.late}</b><span>지연</span></div>` : ''}
-      </div>
-      <dl class="cc-meta">
-        <div><dt>이번 달 완료</dt><dd>${s.doneThisMonth}건</dd></div>
-        <div><dt>마지막 요청</dt><dd>${relDate(s.lastReq)}</dd></div>
-        <div><dt>급건 비율</dt><dd>${s.urgentRate == null ? '-' : s.urgentRate + '%'}</dd></div>
-      </dl>
-      <div class="cc-subs">${subs}</div>
-      <div class="cc-ft">
-        <button class="cc-act primary" data-act="open" type="button"><i class="ti ti-external-link"></i><span>페이지 열기</span></button>
-        <button class="cc-act" data-act="copy" type="button"><i class="ti ti-link"></i><span>링크 복사</span></button>
-        <span class="spacer"></span>
-        <button class="cc-act" data-act="subs" type="button"><i class="ti ti-users"></i><span>구독·담당자</span></button>
-        <button class="cc-act" data-act="types" type="button"><i class="ti ti-list-details"></i><span>작업유형</span></button>
-      </div>
-    </article>`;
-  }).join('') : `<div class="empty-box"><b>아직 클라이언트가 없어요</b>'새 클라이언트'로 첫 페이지를 만들어 보세요.</div>`;
+  if (clTab === 'archived') {
+    const rows = archived.filter(match);
+    $('cl-table').innerHTML = `<thead><tr><th>클라이언트</th><th>보관일</th><th>업무</th><th></th></tr></thead><tbody>${
+      rows.length ? rows.map(c => {
+        const n = data.tasks.filter(t => t.client_id === c.id).length;
+        return `<tr data-id="${c.id}">
+          <td class="c-name">${esc(c.name)}<span class="mt">링크 접속 차단 중</span></td>
+          <td>${c.archived_at ? fmtDate(c.archived_at) : '-'}</td>
+          <td><span class="n">${n}</span>건</td>
+          <td class="acts"><span class="acts-in">
+            <button class="pill-btn" data-act="restore" type="button">복원</button>
+            <button class="pill-btn danger" data-act="delete" type="button">삭제</button>
+          </span></td></tr>`;
+      }).join('') : `<tr><td colspan="4" class="cl-empty">${q ? '검색 결과가 없어요' : '보관된 클라이언트가 없어요'}</td></tr>`
+    }</tbody>`;
+    return;
+  }
 
-  const archived = data.clients.filter(c => c.archived);
-  $('arch').style.display = archived.length ? '' : 'none';
-  $('arch-lbl').textContent = `보관된 클라이언트 (${archived.length})`;
-  $('arch-list').innerHTML = archived.map(c => `
-    <div class="arch-row" data-id="${c.id}">
-      <div class="nm">${esc(c.name)}<div class="mt">보관됨${c.archived_at ? ' · ' + fmtDate(c.archived_at) : ''} · 링크 접속 차단 중</div></div>
-      <button class="a-btn sec" data-act="restore" type="button">복원</button>
-      <button class="a-btn sec" data-act="delete" type="button" style="color:#b91c1c">삭제</button>
-    </div>`).join('');
+  const rows = active.filter(match)
+    .map(c => ({ c, s: clientStats(data, c.id) }))
+    .sort((a, b) => b.s.pending - a.s.pending || b.s.late - a.s.late || a.c.name.localeCompare(b.c.name, 'ko'));
+  $('cl-table').innerHTML = `<thead><tr>
+      <th>클라이언트</th><th>검토 대기</th><th>진행 중</th><th>지연</th><th>이번 달 완료</th><th>마지막 요청</th><th>급건 비율</th><th>구독 · 담당</th><th></th>
+    </tr></thead><tbody>${
+    rows.length ? rows.map(({ c, s }) => {
+      const on = !muted.has(c.id);
+      const subs = s.subs.map(sub => {
+        const m = data.team.find(t => t.id === sub.team_id);
+        return m ? `<span class="sub-chip">${sub.no} <b>${esc(m.name)}</b></span>` : `<span class="sub-chip empty">${sub.no} 미연결</span>`;
+      }).join('');
+      return `<tr data-id="${c.id}">
+        <td class="c-name">${esc(c.name)}${s.unseen && on ? `<span class="new-tag">새 요청 ${s.unseen}</span>` : ''}</td>
+        <td><span class="pend-badge ${s.pending ? '' : 'zero'}">${s.pending}</span></td>
+        <td><span class="n ${s.open ? '' : 'dim'}">${s.open}</span></td>
+        <td><span class="n ${s.late ? 'bad' : 'dim'}">${s.late || '—'}</span></td>
+        <td><span class="n">${s.doneThisMonth}</span>건</td>
+        <td>${relDate(s.lastReq)}</td>
+        <td>${s.urgentRate == null ? '-' : s.urgentRate + '%'}</td>
+        <td><div class="subs">${subs}</div></td>
+        <td class="acts"><span class="acts-in">
+          <button class="icon-btn ${on ? '' : 'muted'}" data-act="mute" type="button" aria-pressed="${on}" aria-label="${on ? '이 기기에서 알림 끄기' : '이 기기에서 알림 켜기'}" title="${on ? '이 기기에서 알림 받는 중' : '이 기기에서 알림 꺼짐'}"><i class="ti ${on ? 'ti-bell' : 'ti-bell-off'}"></i></button>
+          <button class="pill-btn" data-act="copy" type="button">링크 복사</button>
+          <button class="pill-btn dark" data-act="open" type="button">페이지 열기</button>
+          <button class="icon-btn" data-act="more" type="button" aria-label="더보기"><i class="ti ti-dots"></i></button>
+        </span></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="9" class="cl-empty">${q ? '검색 결과가 없어요' : "아직 클라이언트가 없어요. '+ 추가'로 첫 페이지를 만들어 보세요."}</td></tr>`
+  }</tbody>`;
 }
 
-// 카드 버튼 처리 (이벤트 위임)
-$('cc-grid').addEventListener('click', e => {
+document.querySelectorAll('.cl-tab').forEach(t => t.onclick = () => { clTab = t.dataset.tab; renderClients(); });
+$('cl-search').addEventListener('input', () => renderClients());
+
+// 표 버튼 처리 (이벤트 위임)
+$('cl-table').addEventListener('click', e => {
   const btn = e.target.closest('[data-act]');
   if (!btn) return;
-  const id = btn.closest('.cc').dataset.id;
+  const id = btn.closest('tr').dataset.id;
   const c = data.clients.find(x => x.id === id);
   const act = btn.dataset.act;
   if (act === 'open') openClient(c);
   if (act === 'copy') copy(clientUrl(c));
-  if (act === 'subs') modalSubs(id);
-  if (act === 'types') modalTypes(id);
+  if (act === 'restore') modalRestore(id);
+  if (act === 'delete') modalDelete(id);
   if (act === 'mute') { const on = toggleMute(id); toast(on ? `${c.name} 알림을 이 기기에서 받아요` : `${c.name} 알림을 이 기기에서 껐어요`); render(); }
   if (act === 'more') openPop(btn, [
+    { icon: 'ti-users', label: '구독·담당자', fn: () => modalSubs(id) },
+    { icon: 'ti-list-details', label: '작업유형', fn: () => modalTypes(id) },
     { icon: 'ti-refresh', label: '링크 재발급', fn: () => modalReissue(id) },
     { icon: 'ti-pencil', label: '이름 변경', fn: () => modalRename(id) },
     { icon: 'ti-archive', label: '보관', fn: () => modalArchive(id), danger: true }
   ]);
 });
-
-$('arch-list').addEventListener('click', e => {
-  const btn = e.target.closest('[data-act]');
-  if (!btn) return;
-  const id = btn.closest('.arch-row').dataset.id;
-  if (btn.dataset.act === 'restore') modalRestore(id);
-  if (btn.dataset.act === 'delete') modalDelete(id);
-});
-
-$('arch-tog').onclick = () => {
-  const open = $('arch').classList.toggle('open');
-  $('arch-tog').setAttribute('aria-expanded', open);
-};
 
 async function openClient(c) {
   await api.markSeen(c.id, data.pending);
@@ -482,21 +484,6 @@ function modalDelete(id) {
   $('dl-csv').onclick = () => exportClientCSV(data, id);
   $('dl-name').oninput = e => { $('dl-ok').disabled = e.target.value.trim() !== c.name; };
   $('dl-ok').onclick = async () => { await api.deleteClient(id); await reload(); closeModal(); toast(`${c.name}을(를) 삭제했어요`); };
-}
-
-// ════════════ 담당자 현황 ════════════
-function renderWorkload() {
-  const rows = teamStats(data).sort((a, b) => b.open - a.open || a.member.name.localeCompare(b.member.name, 'ko'));
-  const cName = id => (data.clients.find(c => c.id === id) || {}).name || '';
-  $('wl-table').innerHTML = `<thead><tr><th>팀원</th><th>맡은 구독</th><th class="num">진행 중</th><th class="num">지연</th><th class="num">이번 달 완료</th></tr></thead><tbody>${
-    rows.length ? rows.map(r => `<tr>
-      <td style="font-weight:600;color:var(--t1)">${esc(r.member.name)}</td>
-      <td>${r.clients.length ? r.clients.map(x => `<span class="sub-chip" style="margin:2px 4px 2px 0;display:inline-block">${esc(x.client.name)} <b>구독 ${x.no}</b></span>`).join('') : '<span class="bd-line">연결된 구독 없음</span>'}</td>
-      <td class="num ${r.open ? '' : 'dim'}">${r.open}${r.open ? `<div class="bd-line">${Object.entries(r.byClient).map(([cid, n]) => `${esc(cName(cid))} ${n}`).join(' · ')}</div>` : ''}</td>
-      <td class="num ${r.late ? 'bad' : 'dim'}">${r.late}</td>
-      <td class="num ${r.doneThisMonth ? '' : 'dim'}">${r.doneThisMonth}</td>
-    </tr>`).join('') : `<tr><td colspan="5" class="notif-empty">팀원 명단에 팀원을 먼저 추가해주세요.</td></tr>`
-  }</tbody>`;
 }
 
 // ════════════ 팀원 명단 ════════════

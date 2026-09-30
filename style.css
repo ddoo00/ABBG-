@@ -581,11 +581,9 @@ input::placeholder,textarea::placeholder{color:var(--t3);}
 .stats-bar-fill{height:7px;border-radius:4px;min-width:2px;transition:width .3s;}
 .stats-bar-label{font-size:12px;color:var(--t2);font-weight:600;white-space:nowrap;}
 
-/* ══ 클라이언트명 × ABBG 상단 고정 표시 ══ */
-.client-bar{position:sticky;top:0;z-index:40;display:flex;align-items:center;height:44px;padding:0 36px;background:var(--surface);border-bottom:1px solid var(--border);}
-.client-bar .client-title{width:100%;max-width:880px;margin:0 auto;font-size:var(--fs-sm);font-weight:700;color:var(--t1);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* ══ 클라이언트명 × ABBG (사이드바 로고 자리) ══ */
+.sb-client{flex:1;min-width:0;margin-right:10px;font-size:16px;font-weight:700;color:var(--t1);letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:keep-all;}
 @media(max-width:768px){
-  .client-bar{display:none;}
   .mob-hd{position:sticky;top:0;z-index:90;}
   .mob-logo.client-title{font-size:15px;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 }
