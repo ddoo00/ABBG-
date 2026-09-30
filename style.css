@@ -602,3 +602,7 @@ input::placeholder,textarea::placeholder{color:var(--t3);}
 .blocked-logo{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--t1);margin-bottom:28px;}
 .blocked-t{font-size:var(--fs-lg);font-weight:700;color:var(--t1);margin-bottom:8px;}
 .blocked-s{font-size:var(--fs-sm);color:var(--t3);line-height:1.7;}
+
+/* 라벨 옆 안내 문구 */
+.lbl-note{margin-left:8px;font-size:var(--fs-xs);font-weight:500;color:var(--t3);}
+@media(max-width:768px){.lbl-note{display:block;margin:4px 0 0;line-height:1.5;}}
